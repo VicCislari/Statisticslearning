@@ -1,0 +1,145 @@
+---
+title: 'Bivariate Descriptive Statistics with R'
+author: "Dr. Falkenberg"
+date: "WS 19/20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# Example of descriptive statistics for bivariate data
+
+## MASS package contains data about 93 cars on sale in the USA in 1993. They're stored in Cars93 object and include 27 features for each car, some of which are categorical. 
+## Load the MASS package, other necessary packages and look at the type of vehicles included in cars93:
+```{r, echo=TRUE}
+# package with data 
+library(MASS)
+# tidyverse 
+library(tidyverse)
+
+# display the first lines of Cars93
+head(Cars93)
+```
+***
+## Here we consider only the two continous variables Horsepower, MPG.city and the three categorical variables Type, Origin (USA or non USA), Man.trans.avail (manual transmission version available (yes or no)
+```{r, echo=TRUE}
+# The MASS package has its own function select(). Thus indicate by dplyr::select that the tidyverse function must  be used.
+car_data <- Cars93 %>% 
+  as_tibble() %>%
+#  as_data_frame() %>%
+  dplyr::select(type = Type, 
+         origin = Origin, 
+         mpg = MPG.city, 
+         hp = Horsepower,
+         mantrans = Man.trans.avail )
+head(car_data)
+```
+***
+## Two continous variables: Horsepower (hp) and MPG.city (mpg)
+### Measure for the relationsship
+```{r, echo=TRUE}
+car_data %>%
+  summarise("covariance" = cov(hp,mpg),
+            "coff. of correlation" = cor(hp,mpg),
+            "measure of determination" = cor(hp,mpg)**2)
+```
+***
+### Scatterplot and linear regression
+```{r, echo=TRUE}
+# linear regression
+reg <- lm(car_data$mpg ~ car_data$hp)
+# display the coefficients of the regression line
+reg$coefficients
+# display rhe residuals of the regression
+reg$residuals
+# display the fitted values
+reg$fitted.values
+
+# draw a scatterplot with regression line
+plot(x = car_data$hp,y = car_data$mpg,
+     cex = 0.5,
+     xlab = "Horsepower", ylab = "MPG (city)",
+     main = "Scatterplot with regression line")
+# add the regression line
+abline(lm(car_data$mpg ~ car_data$hp),
+       col = "red")
+# add the fitted values
+points(x = car_data$hp, y = reg$fitted.values,
+       col = "blue", pch = 4, cex = 0.5)
+segments(x0 = car_data$hp, y0 = reg$fitted.values,
+         x1 = car_data$hp, y1 = car_data$mpg)
+
+# draw a diagramm with the residuals
+plot(reg$residuals,
+     xlab = "no of observation", ylab = "residuals",
+     main = "Residuals to the linear regression",
+     type = "b")
+abline(0,0)
+```
+***
+
+#### A linear relationsship seems to be not adequat for the relationsship, since the deviations do not vary homogenously.
+
+***
+## Two categorical variables: relationship between origin and type
+### Contingency and indifference table, chi^2
+```{r, echo=TRUE}
+# contingency table: type x origin
+# The MASS package has its own function select(). Thus indicate by dplyr::select that the tidyverse function must  be used.
+ctab <- 
+  car_data %>%
+  dplyr::select(type,origin) %>%
+  table()
+# add colum and row sums
+addmargins(ctab)
+
+# indifferenc table: row sum * column sum / total sum
+# f_(.j) * f_(i.) / f_(..) 
+# t() transpose a matrix
+indtab <- 
+  as.matrix(rowSums(ctab)) %*% 
+  t(as.matrix(colSums(ctab))) / sum(ctab)
+# add column and row sums
+addmargins(indtab)
+# chi-square
+chi2 <- sum((ctab-indtab)**2 / indtab)
+chi2
+# Pearson's contingency coefficient
+C <- sqrt(chi2/(chi2+sum(ctab)))
+# corrected Pearson's contingency coefficient
+e <- min(nrow(ctab),ncol(ctab))
+C.corr <- C*sqrt(e/(e-1))
+# values by using the chisq.test() function
+chisq.test(x = car_data$origin, y = car_data$type)
+# chi^2
+chisq.test(x = car_data$origin, y = car_data$type)$statistic
+# contingency table
+chisq.test(x = car_data$origin, y = car_data$type)$observed
+# indifference table
+chisq.test(x = car_data$origin, y = car_data$type)$expected
+```
+***
+#### It seems to be that there is an association between type and origin.
+***
+### Relative Risks, Odds Ratio: origin and mantrans
+```{r, echo=TRUE}
+# The MASS package has its own function select(). Thus indicate by dplyr::select that the tidyverse function must  be used.
+tab <- car_data %>% 
+  dplyr::select(origin, mantrans) %>%
+  table() 
+# add column and row sums
+addmargins(tab)
+# conditional distributions: X = origin, Y = mantrans
+# X given Y
+f_XY <- tab / colSums(tab)
+f_XY
+# relative risks = ratio of the conditional distributions
+rel_risk <- f_XY[,1]/f_XY[,2]
+rel_risk
+# odds ratio
+rel_risk[1]/rel_risk[2]
+```
+#### Proportion of cars offered without manual transmission is 1.18 times higher among USA cars when compared with non USA cars. Furthermore the proportion of cars offered with manual transmissions is 0.15 times smaller among USA cars when compared with non USA cars
+#### The chance of a car offered without manual transmission is 7.68 times higher for USA cars compared with non USA cars.
+

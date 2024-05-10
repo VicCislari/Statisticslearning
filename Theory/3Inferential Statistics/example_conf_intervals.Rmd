@@ -1,0 +1,317 @@
+---
+title: "Confidence Intervals in the Normal Model and the Binomial Model"
+author: "Dr. Falkenberg"
+date: "WS 2022/23"
+output:
+  pdf_document: default
+  html_document: default
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+## Confidence Interval - Normal Distribution
+
+-   **Example:** In connection with the behaviour of children in road
+    traffic, the reaction time of 10-year-old children is investigated.
+    Experience has shown that reaction times are normally distributed,
+    but the paramaters $\mu$ and $\sigma$ are unknown.
+
+-   Sample of n=51 observations:
+
+```{r, echo=FALSE}
+#n <- 51
+#mu <- 0.8
+#sigma <- 0.4
+#values <- round(rnorm(n,mu,sigma),2)
+
+# fix the values
+values <- c(0.53, 1.29,  0.65,  0.56,  0.15,  1.47,  0.26,  0.46,  1.12,  0.63,  1.80,  0.59,  0.89,  0.87,  0.39,  0.40,  1.25,  1.47,  1.19,  1.13,  0.30,  1.16, 0.25,  0.23,  0.88,  1.00,  1.25,  0.95,  1.28,  0.69,  0.83,  0.36,  1.25,  1.24,  1.03,  0.65,  0.70,  1.26,  0.85,  0.12, 0.8,  0.92,  0.74, 0.45,  1.52,  1.21,  0.82,  1.46,  0.62,  0.80,  0.73)
+values
+```
+
+## Confidence Interval for $\mu$, $1-\alpha=0.95$
+
+### We assume that $\sigma=0.4$.
+
+-   $$
+    \left[\bar X_{(n)} - u_{1-\alpha/2} \frac{\sigma}{\sqrt{n}},
+    \bar X_{(n)} + u_{1-\alpha/2} \frac{\sigma}{\sqrt{n}}\right]
+    $$
+
+```{r, echo=TRUE}
+alpha <- 0.05
+q <- qnorm(1-alpha/2,0,1)
+mv <- mean(values)
+lb1 <- mv-q*sigma/(n^0.5)
+ub1 <- mv+q*sigma/(n^0.5)
+```
+
+-   From $n=51$, $u_{1-\alpha/2}=$ `r qnorm(0.975)`, $\bar x_{(n)} =$
+    `r mv` we get as the confidence interval for $\mu$: **[`r lb1`,
+    `r ub1`]**
+
+-   If we increase the confidence level to 99% we get a wider confidence
+    interval
+
+```{r, echo=TRUE}
+alpha <- 0.01
+q <- qnorm(1-alpha/2,0,1)
+mv <- mean(values)
+lb2 <- mv-q*sigma/(n^0.5)
+ub2 <- mv+q*sigma/(n^0.5)
+```
+
+-   99% confidence interval for $\mu$: **[`r lb2`, `r ub2`]**
+
+-   The package TeachingDemos includes a function z.test which can be
+    used to evaluate the confidence interval directly.
+
+```{r, echo=TRUE}
+library(TeachingDemos)
+z.test(x = values, stdev = sigma, alternative = "two.sided", conf.level = 0.95)$conf.int
+z.test(x = values, stdev = sigma, alternative = "two.sided", conf.level = 0.99)$conf.int
+```
+
+------------------------------------------------------------------------
+
+### $\sigma$ is unknown
+
+-   $$
+    \left[\bar X_{(n)} + t_{n-1,1-\alpha/2} \frac{S_{(n)}}{\sqrt{n}},
+    \bar X_{(n)} + t_{n-1,1-\alpha/2} \frac{S_{(n)}}{\sqrt{n}}\right]
+    $$
+
+```{r, echo=TRUE}
+qt <- qt(1-alpha/2,n-1)
+mv <- mean(values)
+s <- sd(values)
+lb3 <- mv-qt*s/(n^0.5)
+ub3 <- mv+qt*s/(n^0.5)
+```
+
+-   From $n=51$, $t_{n-1,1-\alpha/2}=$ `r qt`, $\bar x_{(n)} =$ `r mv`,
+    $s_{(n)}=$ `r s` we get as the confidence interval for $\mu$:
+    **[`r lb3`, `r ub3`]**
+
+-   Mention that the length of the interval is bigger as in the case if
+    $\sigma$ is known.
+
+-   With the function t.test the confidence interval can be evaluated
+    directly.
+
+```{r, echo=TRUE}
+t.test(x = values, alternative = "two.sided", conf.level = 1-alpha)$conf.int
+```
+
+## Confidence interval for $\sigma^2$, $1-\alpha = 0.95$
+
+-   $\mu$ is known $$
+    \left[\frac{Q_n}{\chi^2_{n,1-\alpha/2}},
+    \frac{Q_n}{\chi^2_{n,\alpha/2}} \right]
+    $$
+
+```{r, echo = TRUE}
+mu <- 0.8
+Qn <- sum((values - mv)^2)
+qchi1 <-qchisq(alpha/2,n)
+qchi2 <-qchisq(1-alpha/2,n)
+lb3 <- Qn/qchi2
+ub3 <- Qn/qchi1
+```
+
+-   From $n=51$, $\chi^2_{n,1-\alpha/2}=$ `r qchi2`,
+    $\chi^2_{n,\alpha/2}=$ `r qchi1`, $s_{(n)}=$ `r s` we get as the
+    confidence interval for $\sigma^2$: **[`r lb3`, `r ub3`]**
+
+-   Taking the square root of the bounds we get as a confidence interval
+    for the standard deviation $\sigma$: **[`r lb3^0.5`, `r ub3^0.5`]**
+
+-   $\mu$ is unknown $$
+    \left[\frac{(n-1)S_{(n)}^2}{\chi^2_{n-1,1-\alpha/2}},
+    \frac{(n-1)S_{(n)}^2}{\chi^2_{n-1,\alpha/2}} \right]
+    $$
+
+```{r, echo=TRUE}
+s <- sd(values)
+qchi3 <-qchisq(alpha/2,n-1)
+qchi4 <-qchisq(1-alpha/2,n-1)
+lb4 <- (n-1)*s^2/qchi2
+ub4 <- (n-1)*s^2/qchi1
+```
+
+-   From $n=51$, $\chi^2_{n-1,1-\alpha/2}=$ `r qchi3`,
+    $\chi^2_{n-1,\alpha/2}=$ `r qchi4`, $s_{(n)}=$ `r s` we get as the
+    confidence interval for $\sigma^2$: **[`r lb4`, `r ub4`]**
+
+-   Taking the square root of the bounds we get as a confidence interval
+    for the standard deviation $\sigma$: **[`r lb4^0.5`, `r ub4^0.5`]**
+
+-   Applying the function sigma.test of the package TeachingDemos the
+    confidence interval can be evaluated directly.
+
+```{r, echo=TRUE}
+library(TeachingDemos)
+sigma.test(x = values, alternative = "two.sided", conf.level = 1-alpha)$conf.int
+```
+
+## One sided confidence intervals
+
+### $1-\alpha=0.95$ upper bound for $\mu$ if $\sigma$ is unknown
+
+-   $$ \bar X_{(n)} + t_{n-1,1-\alpha} \frac{S_{(n)}}{\sqrt{n}} $$
+
+```{r, echo=FALSE}
+qt2 <- qt(1-alpha,n-1)
+ub4 <- mv+qt2*s/(n^0.5)
+```
+
+-   From $n=51$, $t_{n-1,1-\alpha}=$ `r qt2`, $\bar x_{(n)} =$ `r mv`,
+    $s_{(n)}=$ `r s` we get as the upper confidence bound for $\mu$:
+    **`r ub4`**
+
+-   Applying the t.test function we get directly
+
+```{r, echo=TRUE}
+t.test(x = values, alternative = "less", conf.level = 1-alpha)$conf.int
+```
+
+### $1-\alpha=0.95$ lower bound for $\sigma$ if $\mu$ is unknown
+
+-   $$ \sqrt{\frac{(n-1)S_{(n)}^2}{\chi^2_{n-1,1-\alpha}}} $$
+
+```{r, echo=FALSE}
+qchi3 <- qchisq(1-alpha,n-1)
+lb4 <- ((n-1)*s^2/qchi3)^0.5
+```
+
+-   From $n=51$, $\chi^2_{n-1,1-\alpha}=$ `r qchi3`, $s_{(n)}=$ `r s` we
+    get as the lower confidence bound for $\sigma$: **`r lb4`**
+
+-   Applying the function sigma.test of the package TeachingDemos we get
+
+```{r, echo=TRUE}
+library(TeachingDemos)
+(sigma.test(x = values, alternative = "greater", conf.level = 1-alpha)$conf.int)^0.5
+```
+
+## What is the minimum sample size so that the length of the $1-\alpha=0.95$ confidence interval for $\mu$ is 0.1 or less?
+
+### $\sigma = 0.4$ is known
+
+-   length of the confidence interval
+    $$ l = 2 u_{1-\alpha/2} \frac{\sigma}{\sqrt{n}} \le 0.1 \Rightarrow 
+    n \ge \left( \frac{2 u_{1-\alpha/2} \sigma}{0.1} \right)^2 $$
+
+```{r, echo=FALSE}
+nmin <- (2*q*sigma/0.1)^2
+```
+
+-   From $u_{1-\alpha/2}=$ `r qnorm(0.975)` we get as the lower bound
+    for the sample size: $n \ge$ `r nmin`
+
+------------------------------------------------------------------------
+
+### $\sigma$ is unknown
+
+-   length of the confidence interval
+    $$ l = 2 t_{n-1,1-\alpha/2} \frac{S_{(n)}}{\sqrt{n}} \le 0.1 $$
+-   Mention that the length l depends on the sample values, i.e. it is a
+    random variable. Since $S_{(n)}$ is an unbiased estimator for
+    $\sigma$ and $t_{n-1,1-\alpha/2}$ is decreasing with respect to n we
+    get in the average for $n \ge 51$
+    $$ E(l) = 2 t_{n-1,1-\alpha/2} \frac{\sigma}{\sqrt{n}} \le 2 t_{51-1,1-\alpha/2} \frac{\sigma}{\sqrt{n}} \le 0.1 \Rightarrow 
+    n \ge \left( \frac{2 t_{50,1-\alpha/2} \sigma}{0.1} \right)^2 $$
+
+```{r, echo=FALSE}
+nmin2 <- (2*qt*sigma/0.1)^2
+```
+
+-   From $t_{50,1-\alpha/2}=$ `r qt(0.975,50)` we get in the average as
+    the lower bound for the sample size: $n \ge$ `r nmin2`
+
+## Confidence Interval for an unknown proportion
+
+-   **Example:** In a survey, 75 of the 500 respondents voted for Party
+    XY.
+
+## Two sided confidence interval
+
+-   approximative confidence interval for the unkonwn proportion p $$
+    \left[\hat p - u_{1-\alpha/2} \sqrt{\frac{\hat p (1-\hat p)}{n}},
+    \hat p + u_{1-\alpha/2} \sqrt{\frac{\hat p (1-\hat p)}{n}} \right]
+    $$
+
+```{r, echo=FALSE}
+n <- 500
+r <- 75/n
+alpha <- 0.05
+q <- qnorm(1-alpha/2)
+plb <- r-q*(r*(1-r)/n)^0.5
+pub <- r+q*(r*(1-r)/n)^0.5
+```
+
+-   $1-\alpha =0.95$: From n=500, $\hat p = \frac{75}{500}=0.15$,
+    $u_{1-\alpha/2}=$ `r qnorm(0.975)` we get as the confidence for the
+    unknown proportion **[`r plb`, `r pub`]**
+
+-   Checking the rule of thumb: $n \hat p \ge 10$ and
+    $n (1-\hat p) \ge 10$ we see that the approximative calculation is
+    ok.
+
+-   Applying the function binom.test() we can evaluate the exact
+    confidence interval.
+
+```{r, echo=TRUE}
+binom.test(x=75, n=500, alternative = "two.sided", conf.level = 1-alpha)$conf.int
+```
+
+## One sided confidence interval
+
+-   approximative upper confidence bound for the unkonwn proportion p
+    $$ \hat p + u_{1-\alpha} \sqrt{\frac{\hat p (1-\hat p)}{n}} $$
+
+```{r, echo=FALSE}
+q2 <- qnorm(1-alpha)
+pub2 <- r+q*(r*(1-r)/n)^0.5
+```
+
+-   $1-\alpha =0.95$: From n=500, $\hat p = \frac{75}{500}=0.15$,
+    $u_{1-\alpha}=$ `r qnorm(0.95)` we get as the upper confidence bound
+    for the unknown proportion **`r pub2`]**
+
+-   Applying the function binom.test() we can evaluate the exact
+    confidence interval.
+
+```{r, echo=TRUE}
+binom.test(x=75, n=500, alternative = "less", conf.level = 1-alpha)$conf.int
+```
+
+## What is the minimum sample size so that the length of the $1-\alpha=0.95$ confidence interval for p is 0.05 or less?
+
+-   length of the confidence interval
+    $$ l = 2 u_{1-\alpha/2} \sqrt{\frac{\hat p (1-\hat p)}{n}} \le 0.05 $$
+-   Mention that the length l depends on the sample values, i.e. it is a
+    random variable. Since we have that for every
+    $p \in [0,1]: p(1-p) \le 0.25$ we get
+    $$ l \le 2 u_{1-\alpha/2} \sqrt{\frac{0.25}{n}} \le 0.05 \Rightarrow 
+    n \ge \left( \frac{u_{1-\alpha/2}}{0.05} \right)^2 $$
+
+```{r, echo=FALSE}
+nmin3 <- (qnorm(0.975)/0.05)^2
+```
+
+------------------------------------------------------------------------
+
+-   From $u_{1-\alpha/2}=$ `r qnorm(0.975)` we get that if $n \ge$
+    `r nmin3` the length of the confidence interval will be less than
+    0.05.
+-   We have a better estimation if we know an upper bound for p. If for
+    example $p \le 0.2$ we get
+    $$ l \le \left( \frac{2*u_{1-\alpha/2}\sqrt{0.2 \cdot 0.8}}{0.05} \right)^2. $$
+
+```{r, echo=FALSE}
+nmin4 <- (2*qnorm(0.975)*(0.2*0.8)^0.5/0.05)^2
+```
+
+-   Thus we have $n \ge$ `r nmin4` if $p \le 0.2$.
