@@ -1,0 +1,24 @@
+Package: FaRTutorials
+Type: Package
+Title: Tutorials Lecture Statisticc
+Version: 0.2.0
+Author: Parts of Learnr Package and parts from Dr. Egbert Falkenberg
+Maintainer: <falken@fb2.fra-uas.de>
+Description: List of Tutorials
+    applying R in bivariate descriptive statistics: bivariate-descriptive-statistics-with-R
+    base data types in R: data-basic
+    filtering observations from a data fraom: data-filter
+    deriving new variable from a data frame: data-mutate
+    summarising the columns in data frame: data-summarise
+    properties of normal distributions: normal_distr
+    first steps in R: R_firts_steps
+    R as programming language: R-programming-language
+    one sample tests and confidence intervals: tests_conf_intervals
+    tidying data with R: tidy_data
+    case study data cleaning and tidy data: tutorial_case_study
+    applying R in univariate descriptive statistics: univariate-descriptive-statistics-with-R
+License: freie Software
+Encoding: UTF-8
+LazyData: true
+NeedsCompilation: no
+Packaged: 2022-10-16 08:21:54 UTC; Egbert Falkenberg

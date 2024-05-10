@@ -1,0 +1,170 @@
+---
+title: "Properties of Normal Distributions"
+output: learnr::tutorial
+runtime: shiny_prerendered
+description: "Tutorial on Normal Distributions"
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+## Introduction
+In the following we consider normally distributed random variables. We will determine probabilities and quantiles of normally distributed random variables applying appropriate R functions. Furthermore, some important properties of normally distributed random variables will be discussed.
+
+## Properties 
+Let X be a normally distributed random variable with mean $\mu$ and variance $\sigma^2$.
+<!-- *underlying population mu=100, sigma=5* -->
+```{r density, exercise=FALSE}
+mu <- 2
+sigma <- 1
+x <- seq(mu-4*sigma,mu+4*sigma, by = 0.05)
+y <- dnorm(x, mean = mu, sd = sigma)
+plot(x, y, type = "l", main = "density")
+```
+```{r parameters, echo=FALSE}
+question("What are the values of $\\mu$ and $\\sigma$ (select ALL that apply)?",
+  answer("$\\mu = 1$"),
+  answer("$\\mu = 2$", correct = TRUE),
+  answer("$\\sigma = 1$", correct = TRUE),
+  answer("$\\sigma = 2$" ),
+  allow_retry = TRUE
+)
+```
+**Hint:** Mention that the density of normally distributed random variable is symmetric to $x=\mu$ and has an inflection points at $x = \mu \pm \sigma$.
+
+```{r dif_densities, exercise=FALSE}
+plot(seq(2-4*1,2+4*1, by = 0.05),
+  dnorm(seq(2-4*1,2+4*1, by = 0.05), mean = 2, sd = 1),
+  type = "l", col = "red", main = "densities of X, Y and Z",
+  ylab = "", xlab = "x",
+  xlim = c(-2,8), ylim = c(0,0.9))
+lines(seq(4-4*1,4+4*1, by = 0.05),
+  dnorm(seq(4-4*1,4+4*1, by = 0.05), mean = 4, sd = 1),
+  type = "l", col = "blue")
+lines(seq(4-4*0.5,4+4*0.5, by = 0.05),
+  dnorm(seq(4-4*0.5,4+4*0.5, by = 0.05), mean = 4, sd = 0.5),
+  type = "l", col = "black")
+
+```
+```{r dif_densities_diagram, echo=FALSE}
+question("In the diagram are the densities of three normally distributed random variables X (red), Y (blue) and Z (black). Select ALL that apply)?",
+  answer("$X \\sim N(2,1)$", correct=TRUE),
+  answer("$Y \\sim N(4,0.25)$"),
+  answer("$Z \\sim N(4,0.25)$", correct=TRUE),
+  answer("$X \\sim N(4,1)$"),
+  answer("$Y \\sim N(4,1)$", correct = TRUE),
+  allow_retry = TRUE
+)
+```
+
+
+```{r properties, echo=FALSE}
+question("Assume that $X \\sim N(\\mu=2,\\sigma^2=1)$. What are the probabilities of the following events (select ALL that apply)?",
+  answer("$P(X \\le 2) = 0.5$", correct = TRUE),
+  answer("$P(X=x) > 0$ for all x"),
+  answer("$P(1 \\le X \\le 3) \\approx 0.68$", correct = TRUE),
+  answer("$P( |X-2| > 3) \\approx 0.03$", correct = TRUE),
+  answer("$P(X < x) = P(X>x)$ for all x"),
+  answer("$P(x < X-2) = P(X-2 > x)$ for all x", correct = TRUE),
+  allow_retry = TRUE
+)
+```
+**Hint:** Note the $3 \sigma$ rule for normally distributed random variables.
+
+## Probabilities
+Values of the distribution function of a normally distributed random can be calaculated applying the R function pnorm(). Use the help pages to get additional informations about pnorm().
+```{r help_pnorm, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r help_pnorm-solution}
+help("pnorm")
+```
+
+Let $X \sim N(3,16)$ determine the following probabilities applying the R function pnorm():
+$$p_1 = P( X < 2), p_2 = P( X > 5), p_3 = P( 1 < X < 7)$$
+```{r probabilities, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r probabilities-solution}
+p1 <- pnorm(2, mean = 3, sd = 4)
+p1
+p2 <- 1-pnorm(5, mean = 3, sd = 4)
+p2
+p3 <- pnorm(7, mean = 3, sd = 4)-pnorm(1, mean = 3, sd = 4)
+p3
+```
+
+## Quantiles
+```{r help_qnorm-solution}
+help("qnorm")
+```
+Denote by $z_q$ the q-quantile of the Standard Normal Distribution.
+```{r quantil_properties, echo=FALSE}
+question("Select all valid properties",
+  answer("$z_{0.975} \\approx 1.96$", correct = TRUE),
+  answer("$z_{0.5} = 0$", correct = TRUE),
+  answer("$z_q = - z_{1-q}$", correct = TRUE),
+  answer("The q quantile of $X \\sim N(\\mu, \\sigma^2)$ is given by $\\mu + z_{q} \\cdot \\sigma$", correct= TRUE),
+  allow_retry = TRUE
+)
+```
+Quantiles of a normally distributed random can be calaculated applying the R function qnorm(). Use the help pages to get additional informations about qnorm().
+```{r help_qnorm, exercise=TRUE, exercise.eval=TRUE}
+
+```
+Create a table of all quantiles $z_{i \cdot 0.05}, i=1,...,19$.
+```{r z_table, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r z_table-solution}
+library(tidyverse)
+tibble(
+  q = 0.05*seq(1,19,1),
+  z.q = qnorm(q)
+)
+```
+
+Let $X \sim N(-1,2)$. Determine a symmetric 80% interval of all values of X.
+```{r sym_interval, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r sym_interval-solution}
+mu <- -1
+sigma <- sqrt(2)
+c(qnorm(0.1, mean = mu, sd = sigma), qnorm(0.9, mean = mu, sd = sigma))
+```
+
+## Sums and linear combinations
+Linear transformations a normally distributed random variables are normally distributed.
+$$X \sim N(\mu, \sigma^2) \Rightarrow a+b \cdot X \sim N(a+b \cdot \mu, b^2 \cdot \sigma^2) $$
+Furthermore sums and linear combination of independent normally distributed random variables are normally distributed.
+
+```{r sums, echo=FALSE}
+question("Let $X \\sim N(2,4)$, $Y \\sim N(3,9)$. Select ALL what apply",
+  answer("$1+2X \\sim N(5,16)$", correct=TRUE),
+  answer("$-Y \\sim N(3,9)$", correct = TRUE),
+  answer("$X+Y \\sim N(5,13)$", correct = TRUE),
+  answer("$2Y-3X \\sim N(0,72)$", correct=TRUE),
+  allow_retry = TRUE
+)
+```
+
+Assume that the weights of melones and pineapples are normally distributed random variables. Let the expected value of the weight of a melone be 2 kg and of a pineapple be 1.5 kg. The standard deviations of the weight are given by 0.5 kg for the melones and 0.25 for the pineapples. 
+Determine the probability that the total weight of one melone and one pineapple is bigger than 4 kg.
+If the prize per kg of a melone is 1.8 Euro and of a pineapple is 2.2 Euro what is probability that the total prize of one melone and one pineapple is less equal 8 Euro?
+```{r fruits, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r fruits-solution}
+mu.melone <- 2
+mu.pineapple <- 1.5
+sigma.melone <- 0.5
+sigma.pineapple <- 0.25
+# P(weight > 4)
+1-pnorm(4, mean = mu.melone+mu.pineapple,
+        sd = sqrt(sigma.melone^2 + sigma.pineapple^2))
+# P(prize <= 8)
+pnorm(8, mean = 1.8*mu.melone + 2.2*mu.pineapple,
+      sd = sqrt(1.8^2*sigma.melone^2 + 2.2^2*sigma.pineapple^2))
+```

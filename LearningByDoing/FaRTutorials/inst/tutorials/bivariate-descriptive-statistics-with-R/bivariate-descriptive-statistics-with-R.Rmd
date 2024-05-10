@@ -1,0 +1,322 @@
+---
+title: "Tutorial: Bivariate Descriptive Statistics with R"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    df_print: default
+runtime: shiny_prerendered
+description: >
+  Learn how to apply R to do descriptive statistics for two variables.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(tidyverse)
+# package with data 
+library(MASS)
+
+# The MASS package has its own function select(). Thus indicate by dplyr::select that the tidyverse function must  be used.
+
+car_data <- Cars93 %>% 
+  as_tibble() %>%
+  dplyr::select(type = Type, 
+         origin = Origin, 
+         mpg = MPG.city, 
+         hp = Horsepower,
+         mantrans = Man.trans.avail )
+
+reg <- lm(car_data$mpg ~ car_data$hp)
+
+table(car_data$type, car_data$origin) %>% addmargins()
+ctab <- 
+  car_data %>%
+  dplyr::select(type,origin) %>%
+  table()
+
+```
+
+## Welcome
+
+In this tutorial you will learn how to use R for bivariate descriptive statistics. We consider the data set cars93 of the package MASS. 
+
+MASS package contains data about 93 cars on sale in the USA in 1993. They're stored in cars93 object and include 27 features for each car, some of which are categorical. 
+
+The following topics will be discussed
+
+* measures of relationship between two variable (continous resp. categorical)
+* scatterplots
+* linear regression
+* contingency tables
+
+## Load the Data
+
+Here we consider only the two continous variables Horsepower, MPG.city and the three categorical variables Type, Origin (USA or non USA), Man.trans.avail (manual transmission version available (yes or no).
+
+* inspect Cars93 and look at the type of vehicles included
+* create a tibble containing the above given variables 
+* mention taht the MASS package has its own function select(). Thus indicate by dplyr::select that the tidyverse function must be used.
+
+```{r init, exercise=TRUE}
+# display the first lines of Cars93
+head(Cars93)
+
+
+```
+
+```{r init-solution}
+# The MASS package has its own function select(). Thus indicate by dplyr::select that the tidyverse function must  be used.
+Cars93 %>% 
+  as_tibble() %>%
+  dplyr::select(type = Type, 
+         origin = Origin, 
+         mpg = MPG.city, 
+         hp = Horsepower,
+         mantrans = Man.trans.avail )
+```
+
+***
+
+## Two continous variables
+
+### Measures of association
+Horsepower (hp) and MPG.city (mpg) of the tibble car_data should be considered here. Calculate the following measures of association
+
+* covariance
+* coefficient of correlation
+* measure of determination
+
+Apply the summarise() command and use the tibble car_data.
+
+```{r assoc, exercise=TRUE}
+head(car_data)
+
+```
+
+
+```{r assoc-solution}
+car_data %>%
+  summarise("covariance" = cov(hp,mpg),
+            "coff. of correlation" = cor(hp,mpg),
+            "measure of determination" = cor(hp,mpg)**2)
+```
+
+***
+
+### Scatterplot and linear regression
+Perform a linear regression between the variables mpg and hp.
+
+* What is an appropriate dependent variable?
+* Display the coefficients of the regression line, the residuals of the regression and the fitted values.
+
+__Hint:__ The R function can be used to fit the regression line to the data. lm returns an object, which contains beside some other components
+
+* coefficients= a named vector of coefficients
+* residuals	= response minus fitted values.
+* fitted.values	= fitted mean values
+
+```{r reg, exercise=TRUE}
+head(car_data)
+
+```
+
+```{r reg-solution}
+# linear regression
+reg <- lm(car_data$mpg ~ car_data$hp)
+# display the coefficients of the regression line
+reg$coefficients
+# display rhe residuals of the regression
+reg$residuals
+# display the fitted values
+reg$fitted.values
+```
+
+Draw a scatterplot with regression line. You can access the result of the lm() command yb reg. Use
+
+* plot() to draw the scatterplot
+* abline() to add the regression line
+* points() to add the fitted data
+* segments() to connect the observed and the fitted data points
+
+```{r scatter, exercise=TRUE}
+
+```
+
+```{r scatter-solution}
+plot(x = car_data$hp,y = car_data$mpg,
+     cex = 0.5,
+     xlab = "Horsepower", ylab = "MPG (city)",
+     main = "Scatterplot with regression line")
+# add the regression line
+abline(lm(car_data$mpg ~ car_data$hp),
+       col = "red")
+# add the fitted values
+points(x = car_data$hp, y = reg$fitted.values,
+       col = "blue", pch = 4, cex = 0.5)
+segments(x0 = car_data$hp, y0 = reg$fitted.values,
+         x1 = car_data$hp, y1 = car_data$mpg)
+```
+
+Draw a diagramm with the residuals
+```{r res, exercise=TRUE}
+
+```
+
+```{r res-solution}
+plot(reg$residuals,
+     xlab = "no of observation", ylab = "residuals",
+     main = "Residuals to the linear regression",
+     type = "b")
+abline(0,0)
+```
+
+__A linear relationsship seems to be not adequat for the relationsship, since the deviations do not vary homogenously.__
+
+***
+
+## Two categorical variables
+
+We consider the relationship between origin and type in the tibble car_data.
+
+### Contingency and indifference table, $\chi^2$
+
+Create a contingency applying the table() command and add the sums of the columns and rows with addmargins() command.
+```{r cont, exercise=TRUE}
+head(car_data)
+
+```
+```{r cont-solution}
+# contingency table: type x origin with colum and row sums
+table(car_data$type, car_data$origin) %>% addmargins()
+```
+
+Calculate the indifference table and the $\chi^2$-value.
+
+__Hint:__ 
+
+* indifference table: row sum * column sum / total sum or more formally 
+$\hat f_{ij}=f_{.j} * f_{i.} / f_{..}$
+* ctab contains the contingency table
+* apply rowSums() and colSums() to the sums of the rwos and columns of a matrix
+* $\chi^2 =  \sum_{i,j} \frac{(f_{ij}-\hat f_{ij})^2}{\hat f_{ij}}$
+
+```{r ind, exercise=TRUE}
+ctab
+
+```
+
+```{r ind-solution}
+# t() transpose a matrix
+indtab <- 
+  as.matrix(rowSums(ctab)) %*% 
+  t(as.matrix(colSums(ctab))) / sum(ctab)
+# add column and row sums
+addmargins(indtab)
+# chi-square
+chi2 <- sum((ctab-indtab)**2 / indtab)
+chi2
+```
+
+__Alternative solution applying the chisq.test() function__
+chisq.test(x,y) performs chi-squared contingency table test for the categorical variables x and y. It returns a list containing beside some other components
+
+* statistic	= $\chi^2$
+* observed	= contingency table
+* expected	= indifference table
+
+Calculate these value if x is the variable type and y the variable origin in car_data.
+```{r chitest, exercise=TRUE}
+
+```
+
+```{r chitest-solution}
+chitest <- chisq.test(x = car_data$type, y = car_data$origin)
+
+# contingency table
+chitest$observed
+# indifference table
+chitest$expected
+# Chi^2
+chitest$statistic
+
+```
+
+__It seems to be that there is an association between type and origin.__
+
+***
+
+### Relative Risks, Odds Ratio
+Consider the variables origin and mantrans of car_data and determine the contingency table. 
+
+```{r , echo=TRUE, evaluate=TRUE}
+# contingency table
+tab <- table(car_data$origin, car_data$mantrans)
+# contingency table with row and column sums
+tab %>% addmargins()
+
+```
+
+The variables X and Y are independent, if the ratios of cars with origin USA are identical in the groups of cars with manual transmission and without manual transmission. Check if the two varaibale are independent.
+```{r indep, exercise=TRUE}
+# ratio of cars from USA in the group with manual transmission
+
+# ratio of cars from USA in the group without manual transmission
+```
+
+```{r indep-solution}
+# ratio of cars from USA in the group with manual transmission
+26/32
+# ratio of cars from USA in the group without manual transmission
+22/61
+# Since
+26/32 == 22/61
+# X and Y are not independent
+```
+
+Use the contingency table to determine the conditional distribution $f_{XY}$ (X=origin, Y=mantrans), the relative risks and the odds ratio.
+```{r odds, exercise=TRUE}
+# contingency table
+tab <- table(car_data$origin, car_data$mantrans)
+# contingency table with row and column sums
+tab %>% addmargins()
+
+```
+
+
+```{r odds-solution}
+# conditional distributions: X = origin, Y = mantrans
+# X given Y
+f_XY <- tab / colSums(tab)
+f_XY
+# relative risks = ratio of the conditional distributions
+rel_risk <- f_XY[,1]/f_XY[,2]
+rel_risk
+# odds ratio
+rel_risk[1]/rel_risk[2]
+```
+
+```{r quiz1, echo=FALSE}
+quiz(caption = "Quiz",
+  question("Proportion of cars offered without manual transmission is x times higher
+           among USA cars when compared with non USA cars.",
+           answer("x=1.18", correct = TRUE),
+           answer("x=0.15"),
+           answer("x=7.68"),
+           allow_retry = TRUE
+  ),
+  question("Furthermore the proportion of cars offered with manual transmissions is y times
+           smaller among USA cars when compared with non USA cars", 
+           answer("y=1.18"),
+           answer("y=0.15", correct=TRUE),
+           answer("y=7.68"),
+           allow_retry = TRUE
+  ),
+  question("The chance of a car offered without manual transmission is z times higher for 
+           USA cars compared with non USA cars.", 
+           answer("z=1.18"),
+           answer("z=0.15", correct=TRUE),
+           answer("z=7.68"),
+           allow_retry = TRUE
+  )
+)
+```

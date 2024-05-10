@@ -1,0 +1,129 @@
+---
+title: "First Steps in R"
+output: 
+  learnr::tutorial:
+  progressive: true
+  allow_skip: true
+  df_print: default
+runtime: shiny_prerendered
+description: >
+  Learn how to apply R to do descriptive statistics for two variables.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Welcome
+
+In this tutorial you get a brief introduction how to use RStudio by applying a simple R script and the console as a pocket calculator.
+
+The following topics will be discussed
+
+* A simple R script  
+* R as a pocket calculator
+
+## A simple R script
+
+**Example:** Sample of heights and weights of males
+
+$weight_i: 75,81.5,72,79.5,85.5,65,77$\
+$height_i: 180,187,179,189,190,166,183$
+
+*   Averages of weight and height  
+*   Diagram of the pairs (height,weight)?
+
+**Perform the following code**
+
+```{r my-first-script, exercise=TRUE}
+# sample: weight and height of males
+weight <- c(75,81.5,72,79.5,85.5,65,77)
+height <- c(180,187,179,189,190,166,183)
+# means
+mean(weight)
+mean(height)
+# diagram
+plot(height,weight)
+
+# include library
+library(datasets)
+data(women)
+# average heights and weights for American women aged 30-39
+women
+```
+
+**Exercise: Open RStudio, copy the code in the script window and execute
+the code.**
+
+> The usual Rstudio screen has four windows:
+
+*   R scipt(s) and data view:
+    +   The R script is where you keep a record of your work.
+    +   script window: text editor, run button to execute marked lines
+    +   data view: click on the blue circle in front of women to look at
+        the dataset in a spreadsheet form.
+*   Console window is the place where R is waiting for you to tell it
+    what to do, and where it will show the results of a command.
+    +   you can type commands and the output of executed commands
+    +   R stores all commands. Using the arrows $\uparrow$ and
+        $\downarrow$ you can move in the command history to repeat a
+        given command.
+*   Environment and history:
+    +   environment tab shows all the active objects
+    +   history tab shows a list of commands used so far
+*   Files, plots, packages and help.
+    +   files tab shows all the files and folders in your default
+        workspace.
+    +   The plots tab will show all your graphs.
+    +   The packages tab will list a series of packages or add-ons
+        needed to run certain processes: get informations about the
+        package datasets
+    +   For additional info see the help tab: get informations abot the
+        command data and informations about women
+
+## R as a pocket calculator
+
+*   In the R-console you have the possibility to perform simple
+    calculations and call functions.
+*   Arithmetic operations are indicated by the symbols $+$, $-$, $*$,
+    $/$ or \^.
+
+**Exercise: Write the R code required to evaluate:**
+
+* 1+1  
+* $2^5$   
+* 5.25/2  
+* $(2+3) \cdot \sin(3)$
+* $\pi$: pi  
+* $\sqrt{2}$: sqrt(2) 
+
+```{r pocket-calculator, exercise=TRUE}
+
+```
+
+```{r pocket-calculator-solution}
+# addition
+1+1
+# power function
+2^5
+# constant
+pi
+# function calls
+(2+3)*sin(3)
+sqrt(2)
+```
+
+> Remarks:
+
+-   Function calls are derived from the form functionname(argument1,
+    argument2,... ).
+    For example, you can compute $\sqrt{2}$ by the command sqrt(2), too.
+-   R is case sensitive.
+-   R knows a multitude of functions. In order to determine the exact
+    function of a function, you can use the function help or ?. The
+    syntax is help(xyz) or ?xyz.
+-   If you type something in RStudio in the Script window or in the
+    console, you can use the tab key to have RStudio display suitable
+    commands or variable names.  
+    For example, type wo or sq and press the tab key.

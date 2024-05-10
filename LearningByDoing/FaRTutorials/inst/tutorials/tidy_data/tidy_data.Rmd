@@ -1,0 +1,165 @@
+---
+title: "Tutorial: Tidy messy data"
+output: 
+  learnr::tutorial:
+  progressive: true
+  allow_skip: true
+  df_print: default
+runtime: shiny_prerendered
+description: >
+  learn how to aplly tidyvers functions to tidy messy data
+---
+
+```{r setup, include=FALSE}
+library(tidyverse)
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+table4a <- read_csv("table4a.csv")
+table3 <- read_csv("table3.csv")
+table2 <- read_csv("table2.csv")
+```
+
+## Welcome
+
+In this tutorial you will see some examples to apply tidyverse function to tidy messy data.
+
+* Rules of a tidy dataset: variables are in columns, observations are in rows, and values are in cells  
+* At the beginning of data analysis: identify what are the variables are and what are the observations.  
+* typical problems  
+  * One variable might be spread across multiple columns $\rightarrow$ gather()
+  * One observation might be scattered across multiple rows $\rightarrow$ spread()
+  * One column contains values of several variables $\rightarrow$ separate()
+
+The following topics will be discussed
+
+* examples of messy data
+* gather(), pivot_longer()
+* spread(), pivot_wider()
+* separate()
+
+## examples of messy data
+
+```{r, echo=TRUE}
+head(table4a)
+head(table3)
+head(table2)
+
+```
+
+```{r quiz}
+quiz(
+  question("Why are the data sets are messy?",
+    answer("table2: column names are not names of variables, but values of a variable"),
+    answer("table3: column names are not names of variables, but values of a variable"),
+    answer("table4a: column names are not names of variables, but values of a variable", correct = TRUE),
+    answer("table2: an observation is scattered across multiple rows", correct = TRUE),
+    answer("table3: an observation is scattered across multiple rows"),
+    answer("table4a: an observation is scattered across multiple rows"),
+    answer("table2: one column contains values of two variables"),
+    answer("table3: one column contains values of two variables", correct = TRUE),
+    answer("table4a: one column contains values of two variables")
+  )
+)
+```
+
+## gather(), pivot_longer()
+
+> Column names are not names of variables, but values of a variable
+
+```{r, echo=TRUE}
+head(table4a)
+
+```
+
+The column names 1999, 2000 and 20001 represent values of a variabler, and each row represents 3 observations, not one. Those columns must be gathered into a new pair of variables for example year and cases.
+
+**Exercise:**  
+* read the help pages of gather()  
+* apply the gather() function to make table4a tidy
+
+```{r, gather, exercise=TRUE, ecercise.eval=TRUE}
+?gather
+
+``` 
+
+```{r, gather-solution}
+table4a %>% gather('1999','2000','2001',key="year",value="cases") %>%
+                   arrange(country, year) %>% head()
+```
+
+**Exercise:**  
+* read the help pages of the new function pivot_longer()  
+* apply the pivot_longer() function to make table4a tidy
+
+```{r, pivot_longer, exercise=TRUE, ecercise.eval=TRUE}
+?pivot_longer
+
+``` 
+
+```{r, pivot_longer-solution}
+table4a %>% pivot_longer(cols = c('1999','2000','2001'), names_to = "year",
+                         values_to = "cases") %>% head()
+
+```
+
+## spread(), pivot_wider()
+
+> An observation is cattered across multiple rows. 
+
+```{r, echo=TRUE}
+head(table2)
+
+```
+
+An observation is the number of cases in a country in a year, but each observation is spread across two rows.
+
+**Exercise:**  
+* read the help pages of spread()  
+* apply the spread() function to make table2 tidy
+
+```{r, spread, exercise=TRUE, ecercise.eval=TRUE}
+?spread
+
+``` 
+
+```{r, spread-solution}
+table2 %>% spread(key = type, value = count) %>% head()
+```
+
+**Exercise:**  
+* read the help pages of the new function pivot_wider()  
+* apply the pivot_wider() function to make table2 tidy
+
+```{r, pivot_wider, exercise=TRUE, ecercise.eval=TRUE}
+?pivot_wider
+
+``` 
+
+```{r, pivot_wider-solution}
+table2 %>% pivot_wider(names_from = type, values_from = count) %>% head()
+```
+
+## separate()
+
+> An column containing values of severable variables.
+
+```{r, echo=TRUE}
+head(table3)
+
+```
+
+The column rate contains values of the variables cases and population. 
+
+**Exercise:**  
+* read the help pages of separate()  
+* apply the separate() function to make table3 tidy
+
+```{r, separate, exercise=TRUE, ecercise.eval=TRUE}
+?separate
+
+``` 
+
+```{r, separate-solution}
+table3 %>% separate(rate,into=c("cases","population"),sep ="/") %>% head()
+```
+

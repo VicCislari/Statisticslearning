@@ -1,0 +1,473 @@
+---
+title: "R-programming-language"
+output: 
+  learnr::tutorial:
+  progressive: true
+  allow_skip: true
+  df_print: default
+runtime: shiny_prerendered
+description: > 
+  Learn how to use R as a programming language.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(tidyverse)
+knitr::opts_chunk$set(echo = FALSE)
+
+ch_unit <- function(unit,dat){
+  if (unit == "km") {
+    for (i in 1:length(dat)) {
+      dat[i] <- dat[i]*1.60934
+    }
+    return(dat)
+  } 
+  if (unit == "mile") {
+    # instead of a loop use
+    return(dat*0.621371)
+  }
+  return("error")
+}
+```
+
+## Welcome
+
+In this tutorial you will learn how to use R as a programming language.
+
+The following topics will be discussed
+
+*   assignments  
+*   creating and accesssing vectors
+*   creating and accesssing matrices
+*   factors
+*   dataframes and tibbles
+*   functions
+
+## Assigments
+
+* Assignments are made using $<-$.  
+* The content of a variable can be checked by entering the variable name.  
+* To display the structure of a R object, use the function str().  
+* The generated variables remain in memory until R is terminated. To get an 
+  overview of the variables in the memory, you can use the function ls() use. 
+  To delete variables from memory, use the command rm(variableName).
+
+**Exercise:**  
+* assign a the value of $\sqrt{2}$
+* assign b the value of $a>2$.  
+* get the values und display the structures of a, b   
+* show all variables in the memory   
+* remove a, b
+
+```{r assign-var, exercise=TRUE, exercise.eval=TRUE}
+# assigment of variables
+
+# get the value und display the structure
+
+# show all variables in the memory
+
+# remove a, b
+
+```
+
+```{r assign-var-solution}
+# assigment of variables
+a <- 2^0.5
+b <- (a>2)
+# get the value und display the structure
+a
+str(a)
+b
+str(b)
+# show all variables in the memory
+ls()
+# remove a, b
+rm(a,b)
+ls()
+```
+
+## Data Structures: Vectors
+
+* Individual variables can be combined to vectors using the function c(). Numerical 
+  vectors can be calculated in the same way as numbers. Operations are performed point by point.   
+* For logical vectors, the logical operators $\&$ (and), $|$ (or) and ! (not) is defined.   
+* Others methods to create vectors:  
+    + from:to generates a sequence   
+    +   seq(from,to) generates a sequence by= specifies increment; length = specifies desired length  
+    +   rep(x,times) replicate x times; use each= to  repeat ``each'' element of x each times  
+
+**Exercise:**  
+* assign a the vector (1,2,3) and b the vector (2,3,4) and check the structure of a, b  
+* performed the operations: $a+b, a*b, a+a*b$  
+* assign c and the logical vectors (TRUE, FALSE, TRUE, TRUE) and (FALSE, FALSE, FALSE, TRUE) and
+  perform c or d, c and d and not c  
+* use the : operator to create the sequence 3 4 5 6 7 8 9 10  
+* use the seq function to create the sequences 1.0  1.5  2.0  2.5  3.0  3.5  4.0  4.5  5.0  5.5  6.0  6.5  7.0  7.5  8.0  8.5  9.0  9.5 10.0  and  1.0 1.5 2.0 2.5 3.0  
+* use the rep function to repeat 1.2 5-times and the vector (1.2,3.5,pi) 3-times  
+
+```{r vectors, exercise=TRUE, exercise.eval=TRUE}
+# creating vectors
+
+# operations are performed point by point
+
+# creating logical vectors
+
+# or operation
+
+# and operation
+
+# negation
+
+
+# other methods creating vectors
+# : operator
+
+# seq function
+
+# rep function
+
+```
+
+```{r vectors-solution}
+# creating vectors
+a <- c(1,2,3)
+b <- c(2,3,4)
+str(a)
+str(b)
+# operations are performed point by point
+a+b
+a*b
+a+a*b
+# creating logical vectors
+c <- c(TRUE, FALSE, TRUE, TRUE)
+d <- c(FALSE, FALSE, FALSE, TRUE)
+# or operation
+c | d
+# and operation
+c & d
+# negation
+!c
+
+# other methods creating vectors
+# : operator
+3:10
+# seq function
+seq(1,10,by=0.5)
+seq(1,3,length=5)
+# rep function
+rep(1.2,5)
+rep(c(1.2,3.5,pi),3)
+```
+
+## Data Strures: Matrices
+
+> matrix(data = NA, nrow= 1, ncol = 1, byrow = FALSE, dimnames = NULL)  
+
+* The argument data should be a vector containing the entries of the matrix. The arguments nrow and ncol
+  determine the shape of the matrix.
+* The logical argument byrow can be used to determine whether matrices should be read column by column 
+  or row by row (default: column by column). Matrices can be joined column by column or line using the 
+  cbind and rbind functions.  
+* Matrices can be used as usual. The operators +, - function  point by point. Multiplication can be done 
+  pointwise by $*$ or by matrix multiplication by $\%*\%$.  
+* Vectors are one-dimensional arrays and matrices are two-dimensional arrays. R offers the possibility to 
+  define arrays of higher dimensions using the function  
+  
+  array(data = NA, dim = length(data), dimnames = NULL)
+      
+  It should be noted here that the dimensions of the array are determined using the vector dim be 
+  specified.  
+* Access elements of a matrix:  
+    + square brackets: specify the positions of the values you want to view or change.  
+    + logical indexing: a data structure (vector, matrix, array) of logical variables is passed that has 
+      the same dimension as the structure to be indexed. The logical variable selects the elements at whose
+      position it itself has the value TRUE.   
+      
+**Exercise:**
+
+* create a 4x4 matrix containing the sequence 1:16   
+* create a 8x2 matrix containing the sequence 1:16  
+* create a 8x2 matrix containing the sequence 1:16 with byrow=TRUE  
+* create a 2x2 matrix containing the sequence 2:5 and perform the pointwise matrix operations:  
+  $A * A$ and $ A + A*A $ and the matrix multiplication $A*A$.  
+* apply the array function to get a (2,4) array and a (2,4,2) array with data=1:5, mention how
+  the data is recycled  
+* create a vector x containing 2:10 and access  
+    +   the second element of x  
+    +   the elements 2,3 and 4 of x  
+    +   the elements 1 and 3 of x  
+* create a 3x3 matrix M using the values of x aand access  
+    +   $M_{1,2}$  
+    +   the second column of M  
+    +   the first row of M  
+* apply logical indexing to get  
+    + all values > 3 of x  
+    + all values > 3 and < 8 of x  
+    + all values x which are 1 modulo 2  
+    + all values of <= 4 of M  
+
+```{r matrices, exercise=TRUE, exercise.eval=TRUE}
+# creating matrices
+# 4x4 matrix
+
+# 2x8 matrix
+
+# 2x8 matrix, rowwise input
+
+# matrix operations on A: pointwise
+
+# matrix multiplication
+
+
+# array function: defining arrays of arbitray dimensions
+# The values in data are taken to be those in the array with the 
+# leftmost subscript moving fastest. If there are too few elements 
+# in data to fill the array, then the elements in data are recycled.
+
+# 3-dimensional array
+
+# matrix() recycles data, too
+
+# accessing elements: vectors
+
+# accessing elements: matrices
+
+# logical indexing
+
+```
+
+```{r matrices-solution}
+# creating matrices
+# 4x4 matrix
+matrix(1:16, ncol=4, nrow=4)
+# 2x8 matrix
+matrix(1:16, ncol=8, nrow=2)
+# 2x8 matrix, rowwise input
+matrix(1:16, ncol=8, nrow=2, byrow = TRUE)
+
+A <- matrix(2:5, nrow=2, ncol=2)
+A
+# matrix operations on A: pointwise
+A * A
+A + A*A
+# matrix multiplication
+A %*%  A
+
+# array function: defining arrays of arbitray dimensions
+# The values in data are taken to be those in the array with the 
+# leftmost subscript moving fastest. If there are too few elements 
+# in data to fill the array, then the elements in data are recycled.
+array(data=1:5, dim=c(2,4)) # recycle 1:5
+# 3-dimensional array
+array(data=1:5, dim=c(2,4,2)) # recycle 1:5 
+# matrix() recycles data, too
+matrix(1:8, ncol=8, nrow=2)
+
+# accessing elements: vectors
+x <- c(2:10)
+x
+x[2]
+x[2:4]
+x[c(1,3)]
+# accessing elements: matrices
+M <- matrix(x, nrow = 3 ,ncol = 3)
+M
+M[1,2]
+M[1,4] # subscript out of bounds
+M[, 2] # column 2 of A
+M[1, ] # row 1 of A
+# logical indexing
+x[x>3]
+x[x>3 & x < 8]
+x[x%%2 == 1] # %% denotes the modulo operator
+M[M<=4]
+M[M<=4 & M*M>5]
+```
+
+## Factors  
+
+*   Factors are used to represent nominal data.  
+*   Factors are stored as integers, and have labels associated with these unique integers. While factors look (and often behave) like character vectors, they are actually integers under the hood, and you need to be careful when treating them like strings.  
+*   Once created, factors can only contain a pre-defined set values, known as levels.  
+*   factor() is used to create factors in R.
+
+**Exercise:**
+*   create a vector sex applying factor(c("male", "female", "female", "male")) and mention how R assign values to the levels and how the values of the factors are stored  
+*   show the levels and the number of levels of sex  
+
+```{r factors, exercise=TRUE, exercise.eval=TRUE}
+# creating a factor variable sex
+
+# structure
+
+# names (levels)
+
+# show the levels
+
+# show the number of levels
+
+```
+
+```{r factors-solution}
+# creating a factor variable sex
+sex <- factor(c("male", "female", "female", "male"))
+# R assigns 1 to the level "female" and 2 to the level "male" 
+# (because f comes before m, even though the first element in 
+# this vector is "male"). 
+# structure: mention that the values are stored as integer with 
+# names (levels)
+str(sex)
+# show the levels
+levels(sex)
+# show the number of levels
+nlevels(sex)
+```
+
+Factors represent a very efficient way to store character values, because each unique character value is stored only once, and the data itself is stored as a vector of integers.  
+
+
+<!-- Der auskommentierte Teil verursacht eine Ausgabe des Tutorials in Spalten!!!!!!!!!!!!!!! -->
+<!-- * Example of an ordered factor:  -->
+<!-- ```{r factor, exercise=TRUE, exercise.eval=FALSE} -->
+<!-- mons <- c("March","April","January","November","January", "September", -->
+<!--          "October","September","November","August","January","November", -->
+<!--          "November","February","May","August","July","December","August", -->
+<!--          "August","September","November","February","April") -->
+<!-- # show content and structure   -->
+<!-- mons   -->
+<!-- str(mons) -->
+<!-- # converting to factors -->
+<!-- mons <- factor(mons) -->
+<!-- # show content and structure   -->
+<!-- mons -->
+<!-- str(mons) -->
+<!-- table(mons) -->
+<!-- ``` -->
+<!-- Although the months clearly have an ordering, this is not reflected in the output of the table function. Additionally, comparison operators are not supported for unordered factors. Creating an ordered factor  -->
+<!-- solves these problems: -->
+<!-- ```{r factor-solution} -->
+<!-- mons <- c("March","April","January","November","January", "September", -->
+<!--          "October","September","November","August","January","November", -->
+<!--          "November","February","May","August","July","December","August", -->
+<!--          "August","September","November","February","April") -->
+<!-- mons[1] < mons[2] -->
+<!-- mons <- factor(mons,levels=c("January","February","March","April","May", -->
+<!--                              "June","July","August","September","October", -->
+<!--                              "November","December"),ordered=TRUE) -->
+<!-- mons[1] < mons[2] -->
+<!-- table(mons) -->
+<!-- ``` -->
+
+Automatic string to factor conversion introduces non-reproducibility. When 
+creating a factor from a character vector, if the levels are not given 
+explicitly the sorted unique values are used for the levels, and of course the
+result of sorting is locale-dependent. Hence, the results of subsequent 
+statistical analyses can differ with automatic string-to-factor conversion in 
+place.
+
+## Data Frames and Tibbles
+* Data Frame:
+    + two-dimensional array-like structure in which each column contains values of one variable and each row contains one set of values from each column.   
+    +   data can be of numeric, factor or character type  
+    +   each column should contain same number of data items. 
+* Tibbles:
+    +   Modern form of data.frame: tibble() or data\_frame()  
+    +   Tibbles provide the good and effective parts of data.frame but do less (i.e. they do not change variable names or types, and do not do partial matching) and complain more (e.g. when a variable does not exist).  
+    +   Tibble commands are part of the tidyverse package. 
+*   Properties of tibbles:
+    +   It never changes an input's type, i.e. no more converting string vectors to factors.   
+    +   Strict about subsetting: $[\,]$ always returns another tibble.   
+    +   No partial matching with \$ referring a column.  
+    +   Printing: When you print a tibble, it only shows the first ten rows and all the columns that fit on one screen. It also prints an abbreviated description of the column type. This is an advantage in case of large datasets containing complex objects.
+
+
+**Exercise:**
+*   In the following a data frame and a tibble with the same content is created.  
+*   check the structure of df.grouping and t.grouping  
+*   find an example where subseting of a dataframe leads not to a data frame  
+*   check that subseting of a tibble leads always to a tibble  
+*   compare partial matching of df.grouping and t.grouping
+
+```{r df-tibble, exercise=TRUE, exercise.eval=FALSE}
+df.grouping <- data.frame(Group = c("A","A","B","B"), 
+                          Name = c("Schmidt","Olsen","Johansson","Mayer"), 
+                          Age = c(22,18,21,22),
+                          Sex = c("male","female","female","male"), 
+                          stringsAsFactors = TRUE)
+# content and structure
+
+# subseting of a dataframe leads not always to a dataframe
+
+# dataframes do a partial matching
+
+# tibble
+library(tidyverse)
+t.grouping <- tibble(Group = c("A","A","B","B"), 
+                     Name = c("Schmidt","Olsen","Johansson","Mayer"), 
+                     Age = c(22,18,21,22),
+                     Sex = c("male","female","female","male"))
+# content and structure
+
+# mention that subseting leads always to tibbles
+
+# mention that tibbles never do partial matching
+
+```
+
+```{r df-tibble-solution}
+df.grouping <- data.frame(Group = c("A","A","B","B"), 
+                          Name = c("Schmidt","Olsen","Johansson","Mayer"), 
+                          Age = c(22,18,21,22),
+                          Sex = c("male","female","female","male"), 
+                          stringsAsFactors = TRUE)
+# content and structure
+df.grouping
+str(df.grouping)
+# subseting of a dataframe leads not always to a dataframe
+str(df.grouping[,3:4])
+str(df.grouping[,4])
+# dataframes do a partial matching
+df.grouping$Gr
+
+# tibble
+library(tidyverse)
+t.grouping <- tibble(Group = c("A","A","B","B"), 
+                     Name = c("Schmidt","Olsen","Johansson","Mayer"), 
+                     Age = c(22,18,21,22),
+                     Sex = c("male","female","female","male"))
+# content and structure
+t.grouping
+str(t.grouping)
+# mention that subseting leads always to tibbles
+str(t.grouping[,3:4])
+str(t.grouping[,4])
+# mention that tibbles never do partial matching
+t.grouping$Gr
+```
+
+## Functions
+
+*   R has a large numbers of functions built in.  
+*   User can create their own functions to avoid to enter calculations that occur again and again in a similar form completely again and again in the R Console.  
+*   To write a function in R, use the keyword function. 
+
+**Exercise:**
+
+*   Display the code ch_unit  
+*   What does the following function do?  
+*   Apply the function to c(1,2,3,4,5)
+
+```{r function, exercise=TRUE, exercise.eval=FALSE}
+
+```
+
+```{r function-solution}
+# display the code
+ch_unit
+# converting km to miles and vice versa
+
+x <- c(1,2,3,4,5)
+ch_unit("km",x)
+ch_unit("mile",x)
+ch_unit("meile",x)
+```

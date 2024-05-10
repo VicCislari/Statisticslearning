@@ -1,0 +1,5 @@
+
+
+coinPlot<-function(n){
+  
+}

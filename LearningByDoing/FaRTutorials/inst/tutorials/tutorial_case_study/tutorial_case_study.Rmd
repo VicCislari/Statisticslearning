@@ -1,0 +1,315 @@
+---
+title: "Tutorial Case Study"
+output: learnr::tutorial
+runtime: shiny_prerendered
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+library(tidyverse)
+
+tutorial_options(exercise.eval = FALSE)
+
+knitr::opts_chunk$set(echo = FALSE)
+
+who1 <- who %>%
+  gather(key = "key", value = "cases",
+         new_sp_m014:newrel_f65,
+         na.rm = TRUE)
+
+# Values of key are in the form new_.. and newrel_..
+# replace newrel with new_rel
+who2 <- who1 %>%
+  mutate(key = 
+           stringr::str_replace(key,"newrel","new_rel"))
+
+# split the codes at each underscore
+who3 <- who2 %>%
+  separate(key,c("new", "type", "sexage"), sep = "_")
+
+# separate the values of sexage after the first character
+who4 <- who3 %>%
+  separate(sexage, c("sex", "age"), sep = 1)
+
+# Remove the redundant columns new, iso2 and iso3,
+who5 <- who4 %>% select(-new, -iso2, -iso3)
+
+whocleaned <- who %>% 
+  gather(key = "key",  
+         value = "cases",  
+         new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(key =  
+           stringr::str_replace(key,"newrel","new_rel")) %>% 
+  separate(key,c("new", "type", "sexage"), sep = "_") %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%  
+  select(-new, -iso2, -iso3) 
+```
+## Welcome
+In this tutorial, you will learn how to use R to clean and tidy a data set. Here we consider a data set from the World Health Organization Global Tuberculosis Report, and accompanying global populations. 
+
+The tutorial is based on 12.6 R for Data Science  (Grolemund, Wickham).
+
+Here, you will learn how to :
+
+    identify columns that are no variables
+    apply the gather(), mutate(), separate() commands to clean and tidy data
+    right_join() to add additional informations from a data set into another data set
+    
+
+## Inspect the dataset
+### Load the tidyverse package and the data set who, what are the columns?
+```{r loadwho, exercise=TRUE}
+
+```
+
+<div id="loadwho-hint">
+Use library(tidyverse) to load the package. 
+
+With head(who) you can get the first rows of the data set and with help("who") you can some more details abouts the dataset. 
+</div>
+
+### Describe the content of the data set.
+```{r dataset, exercise=TRUE, exercise.setup = "loadwho"}
+
+```
+
+<div id="dataset-hint">
+With help(who) you will get more or less the following information.
+
+World Health Organization TB data Description
+A subset of data from the World Health Organization  Global Tuberculosis Report, and accompanying global  populations.
+
+A dataset with the variables
+
+* country: Country name
+
+* iso2, iso3: 2 & 3 letter ISO country codes
+
+* year: Year
+
+* new_sp_m014 - new_rel_f65: Counts of new TB cases recorded by group. Column names encode three variables that describe the group (see details).
+
+Details: The data uses the original codes given by the World Health Organization. The column names for columns five through 60 are made by combining new_ to a code for method of diagnosis (rel = relapse, sn = negative pulmonary smear, sp = positive pulmonary smear, ep = extrapulmonary) to a code for gender (f = female, m = male) to a code for age group (014 = 0-14 yrs of age, 1524 = 15-24 years of age, 2534 = 25 to 34 years of age, 3544 = 35 to 44 years of age, 4554 = 45 to 54 years of age, 5564 = 55 to 64 years of age, 65 = 65 years of age or older).
+</div>
+
+***
+
+## Clean the data set in several steps
+### Identify columns that are not variables.
+```{r whocolumns, exercise=TRUE}
+```
+<div id="whocolumns-hint">
+With names(who) you will get a list of all columns in the data set.
+
+* country, iso2, and iso3 are three variables that redundantly specify the country.
+
+* year is clearly also a variable.
+
+* From the structure in the variable names (e.g.  new_sp_m014, new_ep_m014, new_ep_f014, ...) these are  likely to be values, not variables.
+</div>
+
+***
+
+### Inspect the gather() command and apply the command.
+To gather together all the columns from new_sp_m014 to newrel_f65. Since we do not know what the values represent, give them the generic name ``key''. The cells represent the count of cases, therefore use the variable cases. Remove the missing values in the  current representation using na.rm. Store the modified data set in my_who
+
+```{r gathernewcol, exercise=TRUE}
+
+```
+
+```{r gathernewcol-hint-1}
+#Use ?gather() to get more informations about gather().
+
+```
+
+```{r gathernewcol-hint-2}
+# my_who <- who %>% gather(key = "key", ...)
+
+```
+
+```{r gathernewcol-hint-3}
+# my_who <- who %>% gather(key = "key", value = "cases",
+#        ...) 
+
+```
+
+```{r gathernewcol-hint-4}
+# my_who <- who %>% 
+#   gather(key = "key", value = "cases",
+#          new_sp_m014:newrel_f65, 
+#          ...) 
+
+```
+
+```{r gathernewcol-hint-5}
+my_who <- who %>% 
+  gather(key = "key", value = "cases",
+         new_sp_m014:newrel_f65, 
+         na.rm = TRUE) 
+```
+
+***
+
+### Count the values in the new ``key'' column.
+The result of the former step is given in who1
+```{r countkeys, exercise=TRUE, exercise.setup = "gathernewcol"} 
+
+```
+
+```{r countkeys-solution}
+who1 %>% count(key)
+```
+
+***
+
+### Clean the values of the column key.
+The values of the new column ``key'' have the following structure:
+The first three letters of each column denote whether the column contains new or old cases of TB. In this dataset, each column contains new cases.
+
+The next two letters describe the type of TB:
+
+* rel stands for cases of relapse
+* ep stands for cases of extrapulmonary TB
+* sn stands for cases of pulmonary TB that could not be   diagnosed by a pulmonary smear (smear negative) 
+* sp stands for cases of pulmonary TB that could be diagnosed be a pulmonary smear (smear positive) 
+
+The sixth letter gives the sex of TB patients. The dataset groups cases by males (m) and females (f).
+
+The remaining numbers gives the age group. The dataset groups cases into seven age groups:  
+
+* 014 = 0 - 14 years old
+* 1524 = 15 - 24 years old 
+* 2534 = 25 - 34 years old
+* 3544 = 35 - 44 years old
+* 4554 = 45 - 54 years old
+* 5564 = 55 - 64 years old  
+* 65 = 65 or older
+
+Unfortunately the names are slightly inconsistent because instead of new_rel we have newrel.
+
+### Use str_replace() command to replace the characters ``newrel`` with ``new_rel``. 
+Mention that the result of the former step is given in who1.
+```{r newrel, exercise=TRUE}
+
+```
+
+```{r newrel-hint-1}
+# str_replace() is a function in the stringr package. With
+# ?stringr::str_replace()
+# you will get some information about the use of it.
+```
+
+```{r newrel-hint-2}
+# use mutate() to change the column key
+who2 <- who1 %>% mutate(key = 
+                           stringr::str_replace(key,"newrel","new_rel")) 
+```
+
+
+```{r newrel-hint-3}
+# display the unique values of key with who2$key %>% unique 
+
+# display the required result with head(who2)
+```
+
+***
+
+### Split the codes at each underscore. Name the new columns type and sexage.
+The result of the former step is given in who2.
+```{r split, exercise=TRUE}
+
+```
+
+```{r split-hint-1}
+# Use the separate() command
+```
+
+
+```{r split-hint-2}
+who3 <- who2 %>% 
+  separate(key,c("new", "type", "sexage"), sep = "_") 
+# display the result
+head(who3)
+```
+
+***
+
+### Separate the values of sexage after the first character.
+The result of the former step is given in who3.
+```{r separate, exercise=TRUE}
+
+```
+
+```{r separate-hint-1}
+# use the separate() command to separate the values of sexage
+```
+
+```{r separate-hint-2}
+who4 <- who3 %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+# display the result
+head(who4)
+```
+
+***
+
+### Remove the redundant columns new, iso2 and iso3. 
+The result of the former step is given in who4.
+```{r remove, exercise=TRUE, exercise.setup ="separate"}
+
+```
+
+```{r remove-solution}
+who5 <- who4 %>% select(-new, -iso2, -iso3)
+# display the result
+head(who5)
+```
+
+***
+
+### Clean the data set using pipes.
+```{r pipe, exercise=TRUE} 
+
+```
+
+```{r pipe-solution}
+whocleaned <- who %>% 
+  gather(key = "key",  
+         value = "cases",  
+         new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(key =  
+           stringr::str_replace(key,"newrel","new_rel")) %>% 
+  separate(key,c("new", "type", "sexage"), sep = "_") %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%  
+  select(-new, -iso2, -iso3) 
+# display the result
+head(whocleaned)
+```
+
+***
+
+## Add population values to the data set.
+Create a table containing country and for every country the population and the number of all infections. Use the function tally/count().
+
+tally() is a convenient wrapper for summarise that will either call n() or sum(n) depending on whether you're tallying for the first time, or re-tallying. count() is similar but calls group_by() before and ungroup() after. If the data is already grouped, count() adds an additional group that is removed afterwards. 
+
+For example in whocleaned %>% count(country, year, wt = cases) the values of the variable cases are counted grouped by the variable country and year.
+```{r join, exercise=TRUE}
+
+```
+
+```{r join-hint-1}
+# display the data set population
+population  
+```
+
+```{r join-hint-2}
+# join population and whocleand
+table1 <- right_join( 
+  population, 
+  whocleaned %>% count(country, year, wt = cases), 
+  by = c("country", "year")
+  ) 
+# display the result
+head(table1)
+```

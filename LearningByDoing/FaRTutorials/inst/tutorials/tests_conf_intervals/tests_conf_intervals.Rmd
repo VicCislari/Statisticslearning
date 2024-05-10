@@ -1,0 +1,432 @@
+---
+title: "One random sample tests and confidence intervals"
+output: learnr::tutorial
+runtime: shiny_prerendered
+description: "Tutorial on test and confidence intervals in the normal and in the bernoulli model"
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+knitr::opts_chunk$set(echo = FALSE)
+```
+## Introduction
+In the following we consider tests, confidence interval in case of normal distributions and in case of binomial distributions. In every case only two-tailed test and two sided confidence intervals are considered. Furthermore the formulas given in the slides are directly applied and additionally the results are calculated by suitable R functions.
+
+## Normal Model: expected value $\mu$
+Let x be random sample from a normally distributed population.
+<!-- *underlying population mu=100, sigma=5* -->
+```{r random-sample, exercise=FALSE}
+set.seed(12345)
+x <- rnorm(25, mean = 100, sd = 5)
+x
+```
+Determine the sample size n, the arithmetic mean mv and the standard deviation s of the sample x.
+```{r numbers-normal-sample, exercise=TRUE, exercise.eval=TRUE}
+
+```
+**Hint:** Use the length(), mean() and sd() functions.
+```{r numbers-normal-sample-solution}
+n <- length(x)
+mv <- mean(x)
+s <- sd(x)
+```
+What are the values of the sample size n, of the arithmetic mean and of the standard deviation s for the sample x.
+```{r values_I, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r values_I-solution}
+n
+mv
+s 
+```
+
+###  $\sigma$ is known
+#### 95% two sided confidence interval for $\mu$ 
+Let $\sigma = 5$. The two sided confidence interval is given by
+$$\left[\bar X_{(n)} - u_{1-\alpha/2} \frac{\sigma}{\sqrt{n}},\bar X_{(n)} + u_{1-\alpha/2} \frac{\sigma}{\sqrt{n}}, \right]$$
+Determine the lower und upper bounds of the interval.
+
+```{r con-interval_I, exercise=TRUE, exercise.eval=TRUE,  exercise.setup="numbers-normal-sample-solution"}
+
+```
+**Hint:** You may want to use the qnorm() function.
+```{r con-interval_I-solution}
+alpha <- 0.05
+sigma <- 5
+l <- mv-qnorm(1-alpha/2)*sigma/sqrt(n)
+u <- mv+qnorm(1-alpha/2)*sigma/sqrt(n)
+c(l,u)
+```
+#### $H_0: \mu = 99, \quad H_1: \mu \ne 99$
+The test statistic of an appropriate test is $\frac{\bar X_{(n)}-\mu}{\sigma}\sqrt{n} \sim N(0,1)$.
+Determine the value of the test statistic for the given sample.
+```{r test_I, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r test_I-solution}
+sigma <- 5
+mu0 <- 99
+(mv - mu0)*sqrt(n)/sigma
+```
+```{r rejecton_region_I}
+question("Reject $H_0$ if the value of the test statistics is",
+         answer("$< 1.644854$"),
+         answer("$> 1.644854$"),
+         answer("$< 1.959964$ or $> 1.959964$", correct = TRUE),
+         allow_retry = TRUE)
+```
+```{r decision_I}
+question("Can $H_0$ be rejected at the 5% level?",
+         answer("No", correct = TRUE),
+         answer("Yes"),
+         allow_retry = TRUE)
+```
+Determine the p-value.
+```{r test_pval_I, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r test_pval_I-solution}
+mu0 <- 99
+sigma <- 5
+test.stat <- (mv - mu0)*sqrt(n)/sigma
+1-(pnorm(abs(test.stat))-pnorm(-abs(test.stat)))
+```
+The package TeachingDemos offers a function z.test to determine the confidence interval and conduct a corresponding test. Read the help pages of the function z.test().
+```{r help_ztest, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r help_ztest-solution}
+library(TeachingDemos)
+help(z.test)
+```
+Apply the z.test() function to compute the 95% confidence interval and the test on the mean.
+```{r ztest, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r ztest-solution}
+library(TeachingDemos)
+z.test(x, mu = 99, sd = 5, alternative = "two.sided", conf.level = 0.95) 
+```
+#### Probability $\beta$ of a type II error if $\mu_1 = 103$
+```{r typeII_error}
+question("A type II error happens if ",
+    answer("$H_0$ is true and we reject $H_0$."),
+    answer("$H_0$ is false and we reject $H_0$."),
+    answer("$H_0$ is true and we do not reject $H_0$."),
+    answer("$H_0$ is false and we do not reject $H_0$.", correct = TRUE),
+    allow_retry = TRUE)
+```
+Calculate $\beta$ if $\mu_1=103$
+```{r beta_I, exercise=TRUE, exercise.eval=TRUE, exercise.setup="dec_rule_I-solution"}
+
+```
+**Hint:**
+
+* Write the decision rule in terms of $\bar X_{(n)}$, i.e. reject $H_0$ if $\bar X_{(n)} < l$ or $\bar X_{(n)} > u$.
+
+* You will not reject $H_0$ if $l \le  \bar X_{(n)} \le u$.
+
+* $\bar X_{(n)} \sim N(\mu_1,\sigma^2/n)$.
+
+```{r beta_I-solution}
+sigma <- 5
+mu0 <- 99
+mu1 <- 103
+n <- length(x)
+l <- mu0 - qnorm(0.975)*sigma/sqrt(n)
+u <- mu0 + qnorm(0.975)*sigma/sqrt(n)
+# reject if (mv < l) | (mv > u) 
+pnorm(u, mean = mu1, sd = sigma/sqrt(n)) - 
+    pnorm(l, mean = mu1, sd = sigma/sqrt(n)) 
+```
+
+###  $\sigma$ is unknown
+#### 95% two sided confidence interval for $\mu$ 
+The two sided confidence interval is given by
+$$\left[\bar X_{(n)} - t_{n-1,1-\alpha/2} \frac{S_{(n)}}{\sqrt{n}},\bar X_{(n)} + t_{n-1,1-\alpha/2} \frac{S_{(n)}}{\sqrt{n}} \right]$$
+Determine the lower und upper bounds of the interval.
+
+```{r con-interval_II, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+**Hint:** You may want to use the qt() function.
+```{r con-interval_II-solution}
+alpha <- 0.05
+l <- mv-qt(1-alpha/2, df=n-1)*s/sqrt(n)
+u <- mv+qt(1-alpha/2, df=n-1)*s/sqrt(n)
+c(l,u)
+```
+#### $H_0: \mu = 99, \quad H_1: \mu \ne 99$
+The test statistic of an appropriate test is $\frac{\bar X_{(n)}-\mu}{S_{(n)}}\sqrt{n} \sim t_{n-1}$.
+Determine the value of the test statistic for the given sample.
+```{r test_II, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r test_II-solution}
+mu0 <- 99
+(mv - mu0)*sqrt(n)/s
+```
+
+```{r rejecton_region_II}
+question("Reject $H_0$ if the value of the test statistics is",
+         answer("$ < 1.710882$"),
+         answer("$ > 1.710882$"),
+         answer("$ < 2.063899$ or $ > 2.063899$", correct = TRUE),
+         allow_retry = TRUE)
+```
+```{r decision_II}
+question("Can $H_0$ be rejected at the 5% level?",
+         answer("No", correct = TRUE),
+         answer("Yes"),
+         allow_retry = TRUE)
+```
+Determine the p-value.
+```{r test_pval_II, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r test_pval_II-solution}
+mu0 <- 99
+n <- length(x)
+test.stat <- (mv - mu0)*sqrt(n)/s
+1-(pt(abs(test.stat), df=n-1)-pt(-abs(test.stat), df=n-1))
+```
+The function t.test determines the confidence interval and conducts a corresponding test. Read the help pages of the function t.test().
+```{r help_ttest, exercise=TRUE, exercise.eval=TRUE} 
+
+```
+```{r help_ttest-solution}
+help(t.test)
+```
+Apply the t.test() function to compute the 95% confidence interval and the test on the mean.
+```{r ttest, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r ttest-solution}
+t.test(x, mu = 99, alternative = "two.sided", conf.level = 0.95)
+```
+#### Probability $\beta$ of a type II error if $\mu_1 = 103$
+Mention that a type II error occurs if $H_0$ is true and we do not reject $H_0$. Calculate $\beta$ if $\mu=103$
+```{r beta_II, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+**Hint:**
+
+* Write the decision rule in terms of $\bar X_{(n)}$, i.e. reject $H_0$ if $\bar X_{(n)} < l$ or $\bar X_{(n)} > u$.
+
+* You will not reject $H_0$ if $l \le  \bar X_{(n)} \le u$.
+
+* $\frac{\bar X_{(n)}-\mu_1}{S_{(n)}}\sqrt{n} \sim t_{n-1}$.
+
+```{r beta_II-solution}
+mu0 <- 99
+mu1 <- 103
+n <- length(x)
+l <- mu0 - qt(0.975,df=n-1)*s/sqrt(n)
+u <- mu0 + qt(0.975,df=n-1)*s/sqrt(n)
+# reject if (mv < l) | (mv > u) 
+pt((u-mu1)*sqrt(n)/s, df=n-1) - pt((l-mu1)*sqrt(n)/s, df=n-1)
+```
+
+## Normal Model: variance $\sigma^2$
+###  $\mu$ and $\sigma$ are unknown
+#### 95% two sided confidence interval for $\sigma^2$ 
+The two sided confidence interval is given by
+$$\left[\frac{(n-1)S_{(n)}^2}{\chi^2_{n-1,1-\alpha/2}},\frac{(n-1)S_{(n)}^2}{\chi^2_{n-1,\alpha/2}} \right]$$
+Determine the lower und upper bounds of the interval.
+
+```{r con-interval_III, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+**Hint:** You may want to use the qchisq() function.
+```{r con-interval_III-solution}
+alpha <- 0.05
+l <- (n-1)*s^2/qchisq(1-alpha/2, df=n-1)
+u <- (n-1)*s^2/qchisq(alpha/2, df=n-1)
+c(l,u)
+```
+#### $H_0: \sigma = 3, \quad H_1: \sigma \ne 3$
+The test statistic of an appropriate test is $\frac{(n-1)S^2_{(n)}}{\sigma^2} \sim \chi^2_{n-1}$.
+Determine the value of the test statistic for the given sample.
+```{r test_III, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r test_III-solution}
+sigma0 <- 3
+(n-1)*s^2/sigma0^2
+```
+```{r rejecton_region_III}
+question("Reject $H_0$ if the value of the test statistics is",
+         answer("$ < 13.84843$"),
+         answer("$ > 36.41503$"),
+         answer("$ < 12.40115$ or $ > 39.36408$", correct = TRUE),
+         allow_retry = TRUE)
+```
+```{r decision_III}
+question("Can $H_0$ be rejected at the 5% level?",
+         answer("Yes", correct = TRUE),
+         answer("No"),
+         allow_retry = TRUE)
+```
+Determine the p-value.
+```{r test_pval_III, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+```{r test_pval_III-solution}
+sigma0 <- 3
+n <- length(x)
+test.stat <- (n-1)*s^2/sigma0^2
+2*min(pchisq(test.stat, df=n-1),1-pchisq(test.stat, df=n-1))
+```
+The function sigma.test of the package TeachingDemos determines the confidence interval and conducts a corresponding test. Read the help pages of the function sigma.test().
+```{r help_sigmatest, exercise=TRUE, exercise.eval=TRUE} 
+
+```
+```{r help_sigmatest-solution}
+library(TeachingDemos)
+help(sigma.test)
+```
+Apply the sigma.test() function to compute the 95% confidence interval and the test on the mean.
+```{r sigmatest, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r sigmatest-solution}
+library(TeachingDemos)
+sigma.test(x, sigma = 3, alternative = "two.sided", conf.level = 0.95)
+```
+
+#### Probability $\beta$ of a type II error if $\sigma = 4$
+Mention that a type II error occurs if $H_0$ is true and we do not reject $H_0$. Calculate $\beta$ if $\sigma=4$
+```{r beta_III, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-normal-sample-solution"}
+
+```
+**Hint:**
+
+* Write the decision rule in terms of $S^2_{(n)}$, i.e. reject $H_0$ if $S^2_{(n)} < l$ or $S^2_{(n)} > u$.
+
+* You will not reject $H_0$ if $l \le  S^2_{(n)} \le u$.
+
+* $\frac{(n-1)S^2_{(n)}}{\sigma^2} \sim \chi^2_{n-1}$.
+
+```{r beta_III-solution}
+sigma0 <- 3
+sigma1 <- 4
+n <- length(x)
+l <- sigma0^2*qchisq(0.025,df=n-1)/(n-1)
+u <- sigma0^2*qchisq(0.975,df=n-1)/(n-1)
+# reject if (s^2 < l) | (s^2 > u) 
+pchisq(u*(n-1)/sigma1^2, df=n-1) - pchisq(l*(n-1)/sigma1^2, df=n-1)
+```
+
+##  Binomial Model: proportion p
+In the following we consider the random sample y from a bimomially distributed population.
+<!-- *underlying population m=200, p=0.2* -->
+```{r random-trials, exercise=FALSE}
+set.seed(4711)
+y <- rbinom(200, size = 1, prob = 0.2)
+y
+```
+Determine the sample size n.y and the number of successes Y of the sample y.
+```{r numbers-binom-sample, exercise=TRUE, exercise.eval=TRUE}
+
+```
+**Hint:** Use the length() and sum() functions.
+```{r numbers-binom-sample-solution}
+n.y <- length(y)
+Y <- sum(y)
+```
+What are the values of the sample size n.y, of the arithmetic mean and of the standard deviation s for the sample x.
+```{r values_II, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-binom-sample-solution"}
+
+```
+```{r values_II-solution}
+n.y
+Y
+```
+#### 95% two sided confidence interval for $p$ 
+The two sided confidence interval is can be for big sample sizes approximated by
+$$\left[\hat p - u_{1-\alpha/2} \sqrt{\frac{\hat p (1- \hat p)}{n}}, \hat p + u_{1-\alpha/2} \sqrt{\frac{\hat p (1- \hat p)}{n}} \right]$$
+Determine the lower und upper bounds of the interval.
+```{r con-interval_IV, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-binom-sample-solution"}
+
+```
+**Hint:** You may want to use the qnorm() function.
+```{r con-interval_IV-solution}
+alpha <- 0.05
+p.hat <- Y/n.y
+l <- p.hat - qnorm(1-alpha/2)*sqrt(p.hat*(1-p.hat)/n.y)
+u <- p.hat + qnorm(1-alpha/2)*sqrt(p.hat*(1-p.hat)/n.y)
+c(l,u)
+```
+#### $H_0: p = 0.15, \quad H_1: p \ne 0.15$
+The test statistic of an appropriate approximating test is $\frac{\hat p - p}{\sqrt{ p(1-p)}}\sqrt{n} \sim N(0,1)$.
+Determine the value of the test statistic for the given sample.
+```{r test_IV, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-binom-sample-solution"}
+
+```
+```{r test_IV-solution}
+p0 <- 0.15
+p.hat = Y/n.y
+(p.hat-p0)*sqrt(n.y)/sqrt(p0*(1-p0))
+```
+```{r rejecton_region_IV}
+question("Reject $H_0$ if the value of the test statistics is",
+         answer("$< -1.644854$"),
+         answer("$> 1.644854$"),
+         answer("$< -1.959964$ or  $> 1.959964$", correct = TRUE),
+         allow_retry = TRUE)
+```
+```{r decision_IV}
+question("Can $H_0$ be rejected at the 5% level?",
+         answer("Yes"),
+         answer("No", correct = TRUE),
+         allow_retry = TRUE)
+```
+Determine the p-value.
+```{r test_pval_IV, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-binom-sample-solution"}
+
+```
+```{r test_pval_IV-solution}
+p0 <- 0.15
+n.y <- length(y)
+p.hat <- sum(y)/n.y
+test.stat <- (p.hat-p0)/sqrt(p0*(1-p0)/n.y)
+1-(pnorm(abs(test.stat))-pnorm(-abs(test.stat)))
+```
+The function binom.test  determines the exact confidence interval and conducts a corresponding exact test. Read the help pages of the function binom.test().
+```{r help_binomtest, exercise=TRUE, exercise.eval=TRUE} 
+
+```
+```{r help_binomtest-solution}
+help(binom.test)
+```
+Apply the binom.test() function to compute the 95% confidence interval and the test on the mean.
+```{r binomtest, exercise=TRUE, exercise.eval=TRUE}
+
+```
+```{r binomtest-solution}
+binom.test(sum(y), length(y) , p = 0.15, alternative = "two.sided", 
+           conf.level = 0.95)
+```
+#### Probability $\beta$ of a type II error if $p_1 = 0.22$
+Mention that a type II error occurs if $H_0$ is true and we do not reject $H_0$. Calculate $\beta$ if $p=0.22$
+```{r beta_IV, exercise=TRUE, exercise.eval=TRUE, exercise.setup="numbers-binom-sample-solution"}
+
+```
+**Hint:**
+
+* Write the decision rule in terms of $Y$, i.e. reject $H_0$ if $Y < l$ or $Y > u$.
+
+* You will not reject $H_0$ if $l \le  Y \le u$.
+
+* $Y \sim N(n p_1,n P-1 (1-p_1))$ approximately.
+
+```{r beta_IV-solution}
+p0 <- 0.15
+p1 <- 0.22
+n <- length(y)
+l <- n*(p0-qnorm(0.975)*sqrt(p0*(1-p0)/n))
+u <- n*(p0+qnorm(0.975)*sqrt(p0*(1-p0)/n))
+# reject if (Y < l) | (Y > u) 
+pnorm(u, mean = n*p1, sd=sqrt(n*p1*(1-p1))) - 
+    pnorm(l, mean = n*p1, sd=sqrt(n*p1*(1-p1)))
+```

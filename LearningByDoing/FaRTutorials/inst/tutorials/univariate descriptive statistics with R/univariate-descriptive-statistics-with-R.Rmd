@@ -1,0 +1,471 @@
+---
+title: "Tutorial: Univariate Statistics with R"
+output: 
+  learnr::tutorial:
+    progressive: true
+    allow_skip: true
+    df_print: default
+runtime: shiny_prerendered
+description: >
+  Learn how to apply R to do descriptive statistics for one variable.
+---
+
+```{r setup, include=FALSE}
+library(learnr)
+# tidyverse 
+library(tidyverse)
+# package with data 
+library(nycflights13)
+```
+
+## Welcome
+
+In this tutorial you will learn how to use R for univariate descriptive statistics. We consider the data set flights of nycflights13 package and here exspecially the discret variable carrier and the continous variable arr_delay.
+
+The following topics will be discussed
+
+* frequency tables
+* bar charts and pie plots
+* histograms
+* grouped frequency tables
+* empirical distribution function
+* measures
+* boxplots
+
+## Discrete Variables
+
+### Frequency tables
+
+Consider the variable carrier in the data set flights and create a frequency table with absolute and relative frequencies.
+
+* apply select() to select the variable carrier of the data set flights
+* count the occurencies of the different values of carrier by group_by(carrier) and count()
+* apply mutate() to add a column for the relative frequency: length(flights$carrier) gives the total number of observations
+* merge the name of the airlines with a left join
+
+```{r freqca, exercise=TRUE}
+# Structure of the data set
+str(flights)
+# Create sample values
+FreqCarrier <- flights %>% select(carrier)
+
+```
+
+```{r freqca-solution}
+FreqCarrier <- 
+  flights %>% 
+  select(carrier) %>%
+  group_by(carrier) %>%
+  count(name = "abs_freq") %>% 
+  mutate(relfreq = abs_freq / length(flights$carrier)) %>%
+  # join the names of the airlines 
+  left_join(airlines, by = "carrier") 
+# change the position of columns 
+FreqCarrier <- FreqCarrier[, c(4,1:3)]
+# display the first lines of FreqCarrier
+head(FreqCarrier)
+```
+
+***
+
+__Alternative solutions:__
+  
+__applying table():__ if x is a vector table(x) counts the number of observation for every diferrent value, the return value is an integer array where the names are the different values
+```{r freqca1, exercise=TRUE}
+
+```
+
+```{r freqca1-solution}
+tibble(
+  airline = flights %>% select(carrier) %>% table() %>% names(),
+  abs_freq = flights %>% select(carrier) %>% table(),
+  rel_freq = abs_freq / sum(abs_freq)
+)
+```
+
+__applying summarise():__ with summarise() you can calculate different characteristis numbers of the data for example with n() the number of observations. Mention that if you want to calculate the total number of observations you must ungroup the data.
+```{r freqca2, exercise=TRUE}
+
+```
+
+```{r freqca2-solution}
+flights %>% select(carrier) %>%
+  group_by(carrier) %>%
+  summarise(abs_freq = n()) %>%
+  ungroup() %>% 
+  mutate(rel_freq = abs_freq / sum(abs_freq))
+```
+
+***
+
+### Bar Charts and Pie Plots
+  
+__barplot()__ creates a bar chart, some important arguments are
+
+* width = width of the bars
+* names.arg = names of the bars
+* xlab and ylab labels the axis
+* main = title of the diagram
+
+Apply the barplot() command to create a bar chart of the absolute frequencies of the variable carrier in the data set flights. Name the bars by the values of the variable carrier. Set width = 2 to show all names of the bars.
+```{r bar, exercise=TRUE}
+FreqCarrier <- flights %>% select(carrier) %>% group_by(carrier) %>%
+  count(name = "abs_freq")
+
+```
+
+```{r bar-solution}
+barplot(# heights of the bars
+  FreqCarrier$abs_freq, 
+  # width of the bars
+  width = 2, 
+  # names of the bars
+  names.arg = FreqCarrier$carrier, 
+  # labels the x-axis
+  xlab = "Carrier", 
+  # labels the y-axis
+  ylab = "absolute frequency", 
+  # title of the diagram
+  main = "Bar Chart") 
+```
+
+***
+  
+__pie()__ draws a pie diagram, some important arguments are
+
+* labels= string for the names of the slices
+* col = colours to be used to fill the slices
+* main = title of the diagram
+
+Apply the pie() command to create a pie plot of the absolute frequencies of the variable carrier in the data set flights. Name the slices by the values of the variable carrier concatenated with the absolute frequencies by applying the paste() command.
+```{r pie, exercise=TRUE}
+FreqCarrier <- flights %>% select(carrier) %>% group_by(carrier) %>% 
+  count(name = "abs_freq")
+
+```
+
+```{r pie-solution}
+pie(x = FreqCarrier$abs_freq,
+    # labels: string aus carrier und absfreq
+    labels = paste(FreqCarrier$carrier,FreqCarrier$abs_freq),
+    # colours to be used to fill the slices
+    col = rainbow(length(FreqCarrier$carrier)),
+    # title of the diagram
+    main = "Pie Chart")
+```
+
+***
+
+## Continous variables
+Consider the arrival delays of the carrier UA
+```{r, echo=TRUE}
+arrdelay_UA <- flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+
+head(arrdelay_UA)
+
+```
+
+***
+
+### Histograms
+  
+__hist()__ creates a histogram, some important arguments are
+
+__breaks__ one of:
+
+* a vector giving the breakpoints between histogram cells,
+* a function to compute the vector of breakpoints,
+* a single number giving the number of cells for the histogram,
+* a character string naming an algorithm to compute the number of cells 
+
+__freq__ logical
+
+* if TRUE, the histogram graphic is a representation of frequencies, the counts component of the result
+* if FALSE, the histogram has a total area of one 
+
+__Create a histogram with 10 equilateral classes.__
+What happens if freq = FALSE?
+```{r hist, exercise=TRUE}
+arrdelay_UA <- flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+
+```
+
+```{r hist-solution}
+hist(x = arrdelay_UA$arr_delay,
+     # 10 equilateral classes
+     breaks = 10,
+     # title
+     main = "Histogram of arr_delay carrier UA",
+     # subtitle
+     sub = "10 classes of equal width",
+     # labels of the axis
+     xlab = "arr_delay",
+     ylab = "absolute frequency")
+
+# relative frequencies with freq = FALSE
+hist(arrdelay_UA$arr_delay,
+     # 10 equilateral classes
+     breaks = 10,
+     # total area = 1
+     freq = FALSE,
+     # title
+     main = "Histogram of arr_delay carrier UA",
+     # subtitle
+     sub = "10 classes of equal width",
+     # labels of the axis
+     xlab = "arr_delay",
+     ylab = "relative frequency")
+```
+
+***
+  
+__Histogram with classes of different width:__ breaks at min, -30, 0, 30, 60 , max
+```{r hist1, exercise = TRUE}
+arrdelay_UA <-  flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+```
+
+```{r hist1-solution}
+# smallest value
+delmin <- min(arrdelay_UA$arr_delay)
+# biggest value
+delmax <- max(arrdelay_UA$arr_delay)
+
+hist(x = arrdelay_UA$arr_delay,
+     # setting the bounds of the classes
+     breaks = c(delmin,-30,0,30,60,delmax), 
+     # total area = 1
+     freq = FALSE,
+     # title
+     main = "Histogram of arr_delay carrier UA",
+     # subtitle
+     sub = "classes of different width",
+     # labels of the axis
+     xlab = "arr_delay",
+     ylab = "")
+```
+
+***
+
+### Grouped frequency tables
+The R function **cut()** divides the range of the as a vector x given data into intervals given by breaks and codes the values in x according to which interval they fall. The leftmost interval corresponds to level one, the next leftmost to level two and so on. The classes are of the form (a,b]
+
+__cut(x, breaks, ...)__
+
+* x = a numeric vector which is to be converted to a factor by cutting.
+* breaks either a numeric vector of two or more unique cut points or a single number (greater than or equal to 2) giving the number of intervals into which x is to be cut.
+* include.lowest logical, indicating if an 'x[i]' equal to the lowest 'breaks' value should be included.
+* labels for the levels of the resulting category. By default, labels are constructed using "(a,b]" interval notation. If labels = FALSE, simple integer codes are returned instead of a factor.
+  
+***
+
+__equilateral classes:__ Create a grouped frequency table with 10 equilateral classes
+```{r equi, exercise = TRUE}
+arrdelay_UA <- flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+  
+```
+  
+```{r equi-solution}
+class_tab1 <- arrdelay_UA %>%
+  # select the column arr_delay
+  select(arr_delay) %>%
+  # new column class (levels of the classes)
+  # 10 classes with same width
+  mutate(class = cut(x = arr_delay, breaks = 10)) %>%
+  # count the observations in every class
+  group_by(class) %>%
+  count(name = "abs_freq") %>%
+  ungroup() %>%
+  # new column rel denoting relative frequencies
+  mutate(rel = abs_freq / sum(abs_freq)) 
+  
+# display the grouped frequency table
+class_tab1
+```
+  
+***
+    
+__classes with different width:__ breaks at min, -30, 0, 30, 60, max
+
+```{r nonequi, exercise = TRUE}
+arrdelay_UA <-
+    flights %>%
+    # select the columns arr_delay and carrier
+    select(arr_delay, carrier) %>%
+    # filter the carrier UA and arr_delay not NA
+    filter(!is.na(arr_delay) & carrier == "UA") 
+  
+```
+  
+```{r nonequi-solution}
+# smallest value
+delmin <- min(arrdelay_UA$arr_delay)
+# biggest value
+delmax <- max(arrdelay_UA$arr_delay)
+  
+class_tab2 <-
+    arrdelay_UA %>%
+    # select column arr_delay
+    select(arr_delay) %>%
+    # add new column class (levels of the classes
+    # 5 classes with bounds delmin,-30,0,30,60,delmax,
+    # the lowest value is included in the lowest class
+    mutate(class = 
+             cut(x = arr_delay, 
+                 breaks = c(delmin,-30,0,30,60,delmax),
+                 include.lowest = TRUE
+             )) %>%
+    # count the observations in every class
+    group_by(class) %>%
+    count(name = "abs_freq") %>%
+    ungroup() %>%
+    # new column rel denoting relative frequencies
+    mutate(abs_rel =abs_freq / sum(abs_freq))
+  # display the grouped frequency table
+  class_tab2
+```
+  
+***
+    
+### Empirical distribution function
+
+__ecdf(x)__ computes an empirical distribution function of by x given observations
+  
+Evaluate the empirical distribution function of the variabel arr_delay and use the function to get the values at -50, -30, 0, 20, 50, 100. Draw a diagram of the function.
+
+```{r ecdf, exercise=TRUE}
+arrdelay_UA <- flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+  
+```
+  
+```{r,ecdf-solution}
+# create the distribution function
+emp_dist <- ecdf(arrdelay_UA$arr_delay)
+# emp_dist(x) = ratio of observation <= x
+emp_dist(c(-50, -30, 0, 20, 50, 100))
+  
+# diagram
+plot(emp_dist, main = "Empirical Cumulative Distribution Function",
+     ylab = "H(x)")
+  
+```
+  
+***
+    
+### Evaluation of Measures 
+    
+Consider the arrival delays of UA and calculate the min- and max-value, the mean, the quantiles and the standard deviation.
+```{r meas1, exercise=TRUE}
+arrdelay_UA <- flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+  
+```
+  
+```{r meas1-solution} 
+# minimum
+min(arrdelay_UA$arr_delay)
+# maximum
+max(arrdelay_UA$arr_delay)
+# mean
+mean(arrdelay_UA$arr_delay)
+# 3 quartiles: apply type = 1 to the values according to the definition in the lecture
+quantile(arrdelay_UA$arr_delay,probs=c(0.25,0.5,0.75),type=1)
+# all six statistics together
+summary(arrdelay_UA$arr_delay)
+# variance
+var(arrdelay_UA$arr_delay)
+# standard deviation
+sd(arrdelay_UA$arr_delay)
+```
+  
+***
+    
+Applying the function __summarise()__ to calculate these numbers.
+```{r meas2, exercise=TRUE}
+arrdelay_UA <- flights %>%
+  # select the columns arr_delay and carrier
+  select(arr_delay, carrier) %>%
+  # filter the carrier UA and arr_delay not NA
+  filter(!is.na(arr_delay) & carrier == "UA") 
+  
+```
+  
+```{r meas2-solution}
+arrdelay_UA %>% summarise(
+  min_delay = min(arr_delay),
+  q1_delay = quantile(arr_delay,probs=0.25,type=1),
+  q2_delay = quantile(arr_delay,probs=0.5,type=1),
+  mean_delay = mean(arr_delay),
+  q3_delay = quantile(arr_delay,probs=0.75,type=1),
+  max_delay = max(arr_delay),
+  var_delay = var(arr_delay),
+  sd_delay = sd(arr_delay)
+  ) 
+```
+
+***
+    
+### Groupwise calculation of measures
+Select the delays of United Airlines and US Airways and calculate the same numbers as before.
+```{r meas3, exercise=TRUE}
+delays <- flights %>%
+  select(arr_delay,carrier) %>%
+  filter(!is.na(arr_delay) & ((carrier == "UA") | (carrier == "US")))
+
+# display the first lines
+head(delays)
+  
+```
+  
+```{r meas3-solution}
+delays %>% 
+  group_by(carrier) %>%
+  summarise(
+    min_delay = min(arr_delay),
+    q1_delay = quantile(arr_delay,probs=0.25,type=1),
+    q2_delay = quantile(arr_delay,probs=0.5,type=1),
+    mean_delay = mean(arr_delay),
+    q3_delay = quantile(arr_delay,probs=0.75,type=1),
+    max_delay = max(arr_delay),
+    var_delay = var(arr_delay),
+    sd_delay = sd(arr_delay)
+    )
+```
+
+***
+
+### Boxplots 
+The format for groupwise boxplots is boxplot(x, data=), where x is a formula and data= denotes the data frame providing the data. An example of a formula is y~group where a separate boxplot for numeric variable y is generated for each value of group. 
+```{r box, exercise=TRUE}
+delays <- flights %>%
+  select(arr_delay,carrier) %>%
+  filter(!is.na(arr_delay) & ((carrier == "UA") | (carrier == "US")))
+  
+```
+```{r box-solution}
+boxplot(arr_delay ~ carrier, delays,
+        main = "Boxplots of arr_delay for two carriers")
+  
+```
