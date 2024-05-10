@@ -1,0 +1,20 @@
+# Sheet 1: Introduction to R, RStudio
+# WS 2022/23
+# Task 1: Calculate the following quantities:
+
+# sum of 52.3, 74.8, 3.17
+52.3 + 74.8 + 3.17
+
+# the square root of 144
+sqrt(144)
+
+# the 10-based logarithm of 200 multiplied with sin of π/4
+log10(200) * sin(pi/4)
+
+# the cumulative sum of the numbers 1, 3, 18, 20, 2
+cumsum(c(1, 3, 18, 20, 2))
+
+# find 10 numbers between 0 and 20 rounded to the nearest integer
+sample(x = 0:20, size = 10, replace = FALSE)
+# or
+round(runif(n = 10, min = 0, max = 20))
