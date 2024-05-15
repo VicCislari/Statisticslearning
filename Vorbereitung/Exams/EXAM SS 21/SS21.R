@@ -3,7 +3,6 @@ library(readr)
 
 raw_data <- read.csv("/Users/vicis/My Drive/FUAS/Lectures/Sem.8.SoSe.2024/Nachholklausuren/Statisticslearning/Vorbereitung/Exams/EXAM SS 21/testing_covid.csv")
 View(raw_data)
- 
 raw_data
 # b) scales and types
 # country: qualitative, discrete, nominal

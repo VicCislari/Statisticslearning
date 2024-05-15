@@ -105,7 +105,6 @@ pnorm(m+0.5,n*p,sqrt(n*p*(1-p)))
 
 
 
-      
 phyper(q = 2,m = 6, n = 5,k = 5)
 
 
@@ -125,7 +124,7 @@ alpha <- 0.05
 u <- phat+qnorm(1-alpha)*sqrt((phat*(1-phat)/n))
 u
 # exact
-binom.test(x = 12, n = 200, p = phat, 
+binom.test(x = 12, n = 200, p = phat,
            alternative = "less", conf.level = 1-0.05)$conf.int
 
 #(d) What is the minimum sample size needed for the upper 95% con-

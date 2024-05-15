@@ -189,10 +189,10 @@ n # 174
 len <- 1.15; n=200;
 sd <- 5
 1-(2*(1-pnorm(len*sqrt(n)/(2*sd))))
-# confidence level = 89.61% 
+# confidence level = 89.61%
 # 90%
-# c) 
-# 
+# c)
+#
 n <- 150; alpha <- 0.2; sd <- 5
 len <- 2*qnorm(1-alpha/2)*sd/sqrt(n)
 len
