@@ -107,9 +107,6 @@ slope <- coef(modell)[2]
 # Add the regression line
 abline(modell, col = 'red', lwd = 2)
 
-
-
-
 # (e)
 german_data <- tidy_data %>%
   filter(country == "Germany")
